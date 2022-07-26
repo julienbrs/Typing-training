@@ -7,6 +7,7 @@ import sys
 import os
 from itertools import cycle
 import dico
+import time
 
 pygame.font.init()
 pygame.mixer.init()
@@ -17,8 +18,7 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Typing Training")
 
 
-SOUND_SELECT_MENU = pygame.mixer.Sound(
-    os.path.join('assets', 'sound_effects', 'menu.wav'))
+
 SOUND_KEYPAD = pygame.mixer.Sound(
     os.path.join('assets', 'sound_effects', 'keypad.mp3')
 )
@@ -29,8 +29,10 @@ SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
 
 # LOADING SCREEN
 IMG_BACKGROUND_LOADING_SCREEN   = pygame.image.load(os.path.join("./assets/yellow_duck_wp.jpg"))
-IMG_TEST                        = pygame.image.load(os.path.join("./assets/yellow_wallpaper.jpg"))
 
+#IMG_TEST                        = pygame.image.load(os.path.join("./assets/yellow_wallpaper.jpg"))
+IMG_BACKGROUND_GAME_RIGHT       = pygame.image.load(os.path.join("./assets/yellow_wallpaper_right.jpg"))
+IMG_BACKGROUND_GAME_WRONG       = pygame.image.load(os.path.join("./assets/yellow_wallpaper_wrong.jpg"))
 
 
 
@@ -40,15 +42,18 @@ YELLOW_ORANGE = (253, 184, 19)
 LIGHT_PURPLE = (153, 93, 206)
 GREY    = (125, 125, 125)
 LIGHT_GREY = (175, 175, 175)
+GREEN = (3, 221, 94)
 
 FONT_HELVETICA  = pygame.font.SysFont("helvetica", 40)
 FONT_ARABOTO_50  = pygame.font.SysFont("haraboto", 50)
 FONT_ARABOTO_80  = pygame.font.SysFont("haraboto", 80)
 
-text_menu_welcome       = FONT_ARABOTO_80.render("TYPING TRAINING", 1, LIGHT_PURPLE)
-text_menu_start_game    = FONT_ARABOTO_50.render("Start a new session", 1, LIGHT_PURPLE)
-text_menu_dictionnary   = FONT_ARABOTO_50.render("Dictionnary", 1, LIGHT_PURPLE)
-text_menu_leaderboard   = FONT_ARABOTO_50.render("Progression", 1, LIGHT_PURPLE)
+text_menu_welcome       = FONT_ARABOTO_80.render("Typing Session", 1, LIGHT_PURPLE)
+text_menu_start_game    = FONT_ARABOTO_50.render("start a new session", 1, LIGHT_PURPLE)
+text_menu_dictionnary   = FONT_ARABOTO_50.render("dictionnary (soon)", 1, LIGHT_PURPLE)
+text_menu_leaderboard   = FONT_ARABOTO_50.render("progression (soon)", 1, LIGHT_PURPLE)
+
+
 
 
 # todo: mettre "progression au lieu de leaderboard"
@@ -137,11 +142,12 @@ def main():
     global IMG_BACKGROUND_LOADING_SCREEN
 
     text_blink = 0
+    wpm = str(0)
     text_scroll = None
     clock = pygame.time.Clock()
     data = cycle(dico.main("temp.txt", "dictionnary.txt")) #todo: shuffle
     current_text = next(data)
-    pygame.mixer.music.load(os.path.join('assets','sound_effects', 'music', 'Menu_Screen.ogg'))
+    pygame.mixer.music.load(os.path.join('assets','sound_effects', 'background_music.mp3'))
     pygame.mixer.music.play(-1)
     while APP_RUN:
         clock.tick(FPS)
@@ -181,8 +187,9 @@ def main():
 
             if INIT_MENU:
                 INIT_MENU = False
+                char_typed = 0
                 test_letter = 0 #0 by default, 1 when test = wrong key, 2 = right key
-                IMG_BACKGROUND_LOADING_SCREEN = IMG_TEST
+                IMG_BACKGROUND_LOADING_SCREEN = IMG_BACKGROUND_GAME_RIGHT
 
                 WIN.blit(pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0,0))
                 #draw_text_target(text_target, WIN)
@@ -191,7 +198,6 @@ def main():
                 current_index = 0
                 font = pygame.freetype.Font(os.path.join("fonts", "Helvetica.ttf"), 50)
                 font.origin = True
-                font_height = font.get_sized_height()
                 M_ADV_X = 4 #todo ??? Madv_x
                     # let's calculate how big the entire line of text is
                 text_surf_rect = font.get_rect(current_text)
@@ -211,9 +217,11 @@ def main():
                 text_surf_rect.center = WIN.get_rect().center
                 # calculate the width (and other stuff) for each letter of the text
                 metrics = font.get_metrics(current_text)
-
+                start_time = time.time()
                 #todo gérer fin de phrase
 
+            time_elapsed = max(time.time() - start_time, 1)
+            wpm = str(round((char_typed / (time_elapsed / 60)) / 5))
             if current_index >= len(current_text) - 1:
                 # if the sentence is complete, let's prepare the
                 # next surface
@@ -227,9 +235,17 @@ def main():
                 metrics = font.get_metrics(current_text)
                 test_letter = 0
 
-            WIN.blit(pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0,0))
+            if test_letter == 0 or test_letter == 2:
+                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE), (0,0))
+            else:
+                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_WRONG, WIN_SIZE), (0,0))
+            str_hud = "WPM : " + wpm
+            text_wpm = FONT_ARABOTO_50.render(str_hud, 1, LIGHT_PURPLE)
+            WIN.blit(text_wpm, (WIDTH/5, HEIGHT/4))
             #text_surf_background.fill('white')
             text_surf.fill(YELLOW_ORANGE)
+
+
             x = 0
             for (idx, (letter, metric)) in enumerate(zip(current_text, metrics)):
                 # select the right color
@@ -239,11 +255,12 @@ def main():
                     elif test_letter == 1:      # test wrong key
                         color = 'red'
                     else:
-                        color = 'green'
+                        color = 'GREEN'
                         current_index += 1
+                        char_typed += 1
                         test_letter = 0
                 elif idx < current_index:
-                    color = 'green'
+                    color = 'GREEN'
                 else:
                     color = (96, 81, 109)
                 # render the single letter
