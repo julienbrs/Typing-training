@@ -141,6 +141,8 @@ def main():
     clock = pygame.time.Clock()
     data = cycle(dico.main("temp.txt", "dictionnary.txt")) #todo: shuffle
     current_text = next(data)
+    pygame.mixer.music.load(os.path.join('assets','sound_effects', 'music', 'Menu_Screen.ogg'))
+    pygame.mixer.music.play(-1)
     while APP_RUN:
         clock.tick(FPS)
         while run_menu:
