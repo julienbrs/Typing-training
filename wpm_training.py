@@ -6,9 +6,9 @@ pygame.freetype.init()
 import sys
 import os
 from itertools import cycle
-import dico
+import manage_dictionnary
 import time
-
+import random
 pygame.font.init()
 pygame.mixer.init()
 FPS = 240
@@ -43,13 +43,14 @@ LIGHT_PURPLE = (153, 93, 206)
 GREY    = (125, 125, 125)
 LIGHT_GREY = (175, 175, 175)
 GREEN = (3, 221, 94)
+DARK_PURPLE = (96, 81, 109)
 
 FONT_HELVETICA  = pygame.font.SysFont("helvetica", 40)
 FONT_ARABOTO_50  = pygame.font.SysFont("haraboto", 50)
 FONT_ARABOTO_80  = pygame.font.SysFont("haraboto", 80)
 
 text_menu_welcome       = FONT_ARABOTO_80.render("Typing Session", 1, LIGHT_PURPLE)
-text_menu_start_game    = FONT_ARABOTO_50.render("start a new session", 1, LIGHT_PURPLE)
+text_menu_start_game    = FONT_ARABOTO_50.render("start new session", 1, LIGHT_PURPLE)
 text_menu_dictionnary   = FONT_ARABOTO_50.render("dictionnary (soon)", 1, LIGHT_PURPLE)
 text_menu_leaderboard   = FONT_ARABOTO_50.render("progression (soon)", 1, LIGHT_PURPLE)
 
@@ -88,9 +89,9 @@ class LinkedText():
             surface.blit(text, (self.x - text.get_width()/2,
                      self.y - text.get_height()/2))
 
-start_game  = LinkedText(WIDTH /2, HEIGHT /5, None, None)
-dictionnary  = LinkedText(WIDTH /2, HEIGHT /3.5, None, start_game)
-leaderboard = LinkedText(WIDTH /2, HEIGHT / 2.7, start_game, dictionnary)
+start_game  = LinkedText(WIDTH /2, HEIGHT /3.6, None, None)
+dictionnary  = LinkedText(WIDTH /2, HEIGHT /2.7, None, start_game)
+leaderboard = LinkedText(WIDTH /2, HEIGHT / 2.2, start_game, dictionnary)
 dictionnary.next_text = leaderboard
 start_game.next_text, start_game.prev_text = dictionnary, leaderboard
 MENU_SELECTED = start_game
@@ -145,7 +146,11 @@ def main():
     wpm = str(0)
     text_scroll = None
     clock = pygame.time.Clock()
-    data = cycle(dico.main("temp.txt", "dictionnary.txt")) #todo: shuffle
+    dictio = manage_dictionnary.main("temp.txt", "dictionnary.txt")
+    random.shuffle(dictio)
+    data = cycle(dictio) #todo: shuffle
+
+
     current_text = next(data)
     pygame.mixer.music.load(os.path.join('assets','sound_effects', 'background_music.mp3'))
     pygame.mixer.music.play(-1)
@@ -240,8 +245,8 @@ def main():
             else:
                 WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_WRONG, WIN_SIZE), (0,0))
             str_hud = "WPM : " + wpm
-            text_wpm = FONT_ARABOTO_50.render(str_hud, 1, LIGHT_PURPLE)
-            WIN.blit(text_wpm, (WIDTH/5, HEIGHT/4))
+            text_wpm = FONT_ARABOTO_50.render(str_hud, 1, DARK_PURPLE)
+            WIN.blit(text_wpm, (WIDTH*0.95 - text_wpm.get_width(), HEIGHT * 0.08))
             #text_surf_background.fill('white')
             text_surf.fill(YELLOW_ORANGE)
 
@@ -262,7 +267,7 @@ def main():
                 elif idx < current_index:
                     color = 'GREEN'
                 else:
-                    color = (96, 81, 109)
+                    color = DARK_PURPLE
                 # render the single letter
                 font.render_to(text_surf, (x, baseline), letter, color)
                 # and move the start position
