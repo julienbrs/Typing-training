@@ -38,15 +38,12 @@ def main(source, dest):
                     word += str(char)
             new_words.append(word)
 
-    affiche(already_used)
-    affiche(new_words)
     temp_dico = new_words + already_used
-    affiche(temp_dico)
 
     #final_words = [i for n, i in enumerate(temp_dico) if i not in temp_dico[:n]]
     final_words = list(OrderedDict.fromkeys(temp_dico))     #utiliser methode compréhension liste ? 
 
-    affiche(final_words)
+
     final_dico = []
     line = ""
     for word in final_words:

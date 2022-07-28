@@ -136,6 +136,14 @@ def wait(text_target, index):
                 pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
                 return 1
 
+def display_chrono(time_start):
+    time_atm = pygame.time.get_ticks()
+    time_elapsed = time_atm - time_start
+    str_time = str(round(time_elapsed/1000, 1))
+    #str_time = (time_elapsed)/1000, ".", time_elapsed/100 [:1])
+    text_time = text_wpm = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
+    WIN.blit(text_time, (WIDTH*0.85 - text_time.get_width(), HEIGHT * 0.18))
+
 def main():
     APP_RUN = True
     INIT_MENU = True
@@ -192,6 +200,7 @@ def main():
 
             if INIT_MENU:
                 INIT_MENU = False
+                time_start_game = pygame.time.get_ticks()
                 char_typed = 0
                 test_letter = 0 #0 by default, 1 when test = wrong key, 2 = right key
                 IMG_BACKGROUND_LOADING_SCREEN = IMG_BACKGROUND_GAME_RIGHT
@@ -275,6 +284,7 @@ def main():
             #text_surf_background.set_alpha(90)
             #WIN.blit(text_surf_background, text_surf_background_rect)
             WIN.blit(text_surf, text_surf_rect)
+            display_chrono(time_start_game)
             pygame.display.update()
 
             pygame.event.clear()
