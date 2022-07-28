@@ -124,23 +124,23 @@ def draw_menu(text_blink, text_scroll, surface):
 
 
 def wait(text_target, index):
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.unicode == text_target[index]:
-                    pygame.mixer.Sound.play(SOUND_KEYPAD)
-                    return 2
-                pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
-                return 1
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.unicode == text_target[index]:
+                pygame.mixer.Sound.play(SOUND_KEYPAD)
+                return 2
+            pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
+            return 1
+    return 3
 
 def display_chrono(time_start):
     time_atm = pygame.time.get_ticks()
     time_elapsed = time_atm - time_start
     str_time = str(round(time_elapsed/1000, 1))
-    #str_time = (time_elapsed)/1000, ".", time_elapsed/100 [:1])
     text_time = text_wpm = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
     WIN.blit(text_time, (WIDTH*0.85 - text_time.get_width(), HEIGHT * 0.18))
 
@@ -149,6 +149,7 @@ def main():
     INIT_MENU = True
     run_menu = True
     global IMG_BACKGROUND_LOADING_SCREEN
+    IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
     text_blink = 0
     wpm = str(0)
@@ -236,6 +237,7 @@ def main():
 
             time_elapsed = max(time.time() - start_time, 1)
             wpm = str(round((char_typed / (time_elapsed / 60)) / 5))
+            #if test_letter !=3:
             if current_index >= len(current_text) - 1:
                 # if the sentence is complete, let's prepare the
                 # next surface
@@ -250,9 +252,12 @@ def main():
                 test_letter = 0
 
             if test_letter == 0 or test_letter == 2:
-                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE), (0,0))
+                IMG_BACKGROUND_GAME = pygame.transform.scale(IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE)
+                WIN.blit(IMG_BACKGROUND_GAME, (0,0))
             else:
-                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_WRONG, WIN_SIZE), (0,0))
+                IMG_BACKGROUND_GAME = pygame.transform.scale(IMG_BACKGROUND_GAME_WRONG, WIN_SIZE)
+                WIN.blit(IMG_BACKGROUND_GAME, (0,0))
+
             str_hud = "WPM : " + wpm
             text_wpm = FONT_ARABOTO_50.render(str_hud, 1, DARK_PURPLE)
             WIN.blit(text_wpm, (WIDTH*0.95 - text_wpm.get_width(), HEIGHT * 0.08))
@@ -264,15 +269,17 @@ def main():
             for (idx, (letter, metric)) in enumerate(zip(current_text, metrics)):
                 # select the right color
                 if idx == current_index:
-                    if test_letter == 0:        # no test atm
+                    if test_letter == 0 or test_letter == 3:        # means "no test atm", todo in method
                         color = 'lightblue'
                     elif test_letter == 1:      # test wrong key
                         color = 'red'
-                    else:
+                    elif test_letter == 2:
                         color = 'GREEN'
                         current_index += 1
                         char_typed += 1
                         test_letter = 0
+                    else: #todo error mieux
+                        print("ERROR")
                 elif idx < current_index:
                     color = 'GREEN'
                 else:
@@ -284,10 +291,10 @@ def main():
             #text_surf_background.set_alpha(90)
             #WIN.blit(text_surf_background, text_surf_background_rect)
             WIN.blit(text_surf, text_surf_rect)
+
             display_chrono(time_start_game)
             pygame.display.update()
 
-            pygame.event.clear()
             test_letter = wait(current_text, current_index)
 
 
