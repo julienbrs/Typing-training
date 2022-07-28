@@ -49,6 +49,7 @@ FONT_HELVETICA  = pygame.font.SysFont("helvetica", 40)
 FONT_ARABOTO_50  = pygame.font.SysFont("haraboto", 50)
 FONT_ARABOTO_80  = pygame.font.SysFont("haraboto", 80)
 
+
 text_menu_welcome       = FONT_ARABOTO_80.render("Typing Session", 1, LIGHT_PURPLE)
 text_menu_start_game    = FONT_ARABOTO_50.render("start new session", 1, LIGHT_PURPLE)
 text_menu_dictionnary   = FONT_ARABOTO_50.render("dictionnary (soon)", 1, LIGHT_PURPLE)
@@ -148,7 +149,6 @@ def main():
     APP_RUN = True
     INIT_MENU = True
     run_menu = True
-    global IMG_BACKGROUND_LOADING_SCREEN
     IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
     text_blink = 0
@@ -161,6 +161,7 @@ def main():
 
 
     current_text = next(data)
+    next_text = next(data)
     pygame.mixer.music.load(os.path.join('assets','sound_effects', 'background_music.mp3'))
     pygame.mixer.music.play(-1)
     while APP_RUN:
@@ -204,11 +205,9 @@ def main():
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
                 test_letter = 0 #0 by default, 1 when test = wrong key, 2 = right key
-                IMG_BACKGROUND_LOADING_SCREEN = IMG_BACKGROUND_GAME_RIGHT
+                IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
-                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0,0))
-                #draw_text_target(text_target, WIN)
-                pygame.display.update()
+                WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME, WIN_SIZE), (0,0))
 
                 current_index = 0
                 font = pygame.freetype.Font(os.path.join("fonts", "Helvetica.ttf"), 50)
@@ -242,7 +241,8 @@ def main():
                 # if the sentence is complete, let's prepare the
                 # next surface
                 current_index = 0
-                current_text = next(data)
+                current_text = next_text
+                next_text = next(data)
                 text_surf_rect = font.get_rect(current_text)
                 baseline = text_surf_rect.y
 
@@ -254,8 +254,10 @@ def main():
             if test_letter == 0 or test_letter == 2:
                 IMG_BACKGROUND_GAME = pygame.transform.scale(IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE)
                 WIN.blit(IMG_BACKGROUND_GAME, (0,0))
-            else:
+            elif test_letter == 1:
                 IMG_BACKGROUND_GAME = pygame.transform.scale(IMG_BACKGROUND_GAME_WRONG, WIN_SIZE)
+                WIN.blit(IMG_BACKGROUND_GAME, (0,0))
+            else:
                 WIN.blit(IMG_BACKGROUND_GAME, (0,0))
 
             str_hud = "WPM : " + wpm
@@ -291,6 +293,10 @@ def main():
             #text_surf_background.set_alpha(90)
             #WIN.blit(text_surf_background, text_surf_background_rect)
             WIN.blit(text_surf, text_surf_rect)
+
+            next_text_game = FONT_HELVETICA.render(next_text, 1, DARK_PURPLE)
+            next_text_game.set_alpha(180)
+            WIN.blit(next_text_game, (WIDTH*0.5 - next_text_game.get_width()/2, HEIGHT * 0.57))
 
             display_chrono(time_start_game)
             pygame.display.update()
