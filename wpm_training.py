@@ -22,9 +22,12 @@ pygame.display.set_caption("Typing Training")
 SOUND_KEYPAD = pygame.mixer.Sound(
     os.path.join('assets', 'sound_effects', 'keypad.mp3')
 )
+SOUND_KEYPAD.set_volume(0.08)
+
 SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
     os.path.join('assets', 'sound_effects', 'wrong.wav')
 )
+SOUND_KEYPAD_WRONG.set_volume(0.08)
 
 
 # LOADING SCREEN
@@ -39,11 +42,13 @@ IMG_BACKGROUND_GAME_WRONG       = pygame.image.load(os.path.join("./assets/yello
 WHITE   = (255, 255, 255)
 LIGHT_BLUE = (167, 190, 211)
 YELLOW_ORANGE = (253, 184, 19)
+YELLOW_ORANGE_DARK = (158, 148, 115)
 LIGHT_PURPLE = (153, 93, 206)
 GREY    = (125, 125, 125)
 LIGHT_GREY = (175, 175, 175)
-GREEN = (3, 221, 94)
+GREEN_RIGHT = (8, 160, 69)
 DARK_PURPLE = (96, 81, 109)
+RED_WRONG = (240, 83, 101)
 
 FONT_HELVETICA  = pygame.font.SysFont("helvetica", 40)
 FONT_ARABOTO_50  = pygame.font.SysFont("haraboto", 50)
@@ -124,7 +129,7 @@ def draw_menu(text_blink, text_scroll, surface):
     return text_blink, text_scroll
 
 
-def wait(text_target, index):
+def wait(text_target, index, last_key_wrong):
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -133,22 +138,25 @@ def wait(text_target, index):
         if event.type == pygame.KEYDOWN:
             if event.unicode == text_target[index]:
                 pygame.mixer.Sound.play(SOUND_KEYPAD)
-                return 2
+                last_key_wrong = False
+                return 2, last_key_wrong
             pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
-            return 1
-    return 3
+            last_key_wrong = True
+            return 1, last_key_wrong
+    return 3, last_key_wrong
 
 def display_chrono(time_start):
     time_atm = pygame.time.get_ticks()
     time_elapsed = time_atm - time_start
     str_time = str(round(time_elapsed/1000, 1))
     text_time = text_wpm = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
-    WIN.blit(text_time, (WIDTH*0.85 - text_time.get_width(), HEIGHT * 0.18))
+    WIN.blit(text_time, (WIDTH*0.95 - text_time.get_width(), HEIGHT * 0.18))
 
 def main():
     APP_RUN = True
     INIT_MENU = True
     run_menu = True
+    pygame.mixer.music.set_volume(0.05)
     IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
     text_blink = 0
@@ -156,7 +164,6 @@ def main():
     text_scroll = None
     clock = pygame.time.Clock()
     dictio = manage_dictionnary.main("temp.txt", "dictionnary.txt")
-    random.shuffle(dictio)
     data = cycle(dictio) #todo: shuffle
 
 
@@ -170,8 +177,6 @@ def main():
 
             if INIT_MENU:
                 INIT_MENU = False
-                #pygame.mixer.music.load(os.path.join('assets','sound_effects', 'music', 'Menu_Screen.ogg'))
-                #pygame.mixer.music.play(-1)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -201,6 +206,7 @@ def main():
         while run_game:
 
             if INIT_MENU:
+                last_key_wrong = False
                 INIT_MENU = False
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
@@ -271,19 +277,25 @@ def main():
             for (idx, (letter, metric)) in enumerate(zip(current_text, metrics)):
                 # select the right color
                 if idx == current_index:
+                    start_pos   = (text_surf_rect.x + x + 3, text_surf_rect.y + text_surf_rect.height - 5)
+                    end_pos     = (text_surf_rect.x + x + metric[M_ADV_X] - 5, text_surf_rect.y + text_surf_rect.height - 5)
                     if test_letter == 0 or test_letter == 3:        # means "no test atm", todo in method
-                        color = 'lightblue'
+                        if last_key_wrong:
+                            color = RED_WRONG
+                        else:
+                            color = 'lightblue'
                     elif test_letter == 1:      # test wrong key
-                        color = 'red'
+                        color = RED_WRONG
                     elif test_letter == 2:
-                        color = 'GREEN'
+                        color = GREEN_RIGHT
                         current_index += 1
                         char_typed += 1
                         test_letter = 0
                     else: #todo error mieux
                         print("ERROR")
+                    color_line = color
                 elif idx < current_index:
-                    color = 'GREEN'
+                    color =  GREEN_RIGHT
                 else:
                     color = DARK_PURPLE
                 # render the single letter
@@ -293,6 +305,7 @@ def main():
             #text_surf_background.set_alpha(90)
             #WIN.blit(text_surf_background, text_surf_background_rect)
             WIN.blit(text_surf, text_surf_rect)
+            pygame.draw.line(WIN, color_line, start_pos, end_pos, width = 5)
 
             next_text_game = FONT_HELVETICA.render(next_text, 1, DARK_PURPLE)
             next_text_game.set_alpha(180)
@@ -301,7 +314,7 @@ def main():
             display_chrono(time_start_game)
             pygame.display.update()
 
-            test_letter = wait(current_text, current_index)
+            test_letter, last_key_wrong = wait(current_text, current_index, last_key_wrong)
 
 
 
