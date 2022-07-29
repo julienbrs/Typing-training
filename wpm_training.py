@@ -36,6 +36,7 @@ IMG_BACKGROUND_LOADING_SCREEN   = pygame.image.load(os.path.join("./assets/yello
 #IMG_TEST                        = pygame.image.load(os.path.join("./assets/yellow_wallpaper.jpg"))
 IMG_BACKGROUND_GAME_RIGHT       = pygame.image.load(os.path.join("./assets/yellow_wallpaper_right.jpg"))
 IMG_BACKGROUND_GAME_WRONG       = pygame.image.load(os.path.join("./assets/yellow_wallpaper_wrong.jpg"))
+IMG_BACKGROUND_RESULTS          = pygame.image.load(os.path.join("./assets/yellow_wp_results.jpg"))
 
 
 
@@ -59,6 +60,8 @@ text_menu_welcome       = FONT_ARABOTO_80.render("Typing Session", 1, LIGHT_PURP
 text_menu_start_game    = FONT_ARABOTO_50.render("start new session", 1, LIGHT_PURPLE)
 text_menu_dictionnary   = FONT_ARABOTO_50.render("dictionnary (soon)", 1, LIGHT_PURPLE)
 text_menu_leaderboard   = FONT_ARABOTO_50.render("progression (soon)", 1, LIGHT_PURPLE)
+text_results_menu_save  = FONT_ARABOTO_50.render("Save Results", 1, LIGHT_PURPLE)
+text_results_menu_continue  = FONT_ARABOTO_50.render("Continue", 1, LIGHT_PURPLE)
 
 
 
@@ -101,6 +104,11 @@ leaderboard = LinkedText(WIDTH /2, HEIGHT / 2.2, start_game, dictionnary)
 dictionnary.next_text = leaderboard
 start_game.next_text, start_game.prev_text = dictionnary, leaderboard
 MENU_SELECTED = start_game
+
+linked_save_results  = LinkedText(WIDTH /2, HEIGHT /3.6, None, None)
+linkedback_to_menu  = LinkedText(WIDTH /2, HEIGHT /2.7, linked_save_results, linked_save_results)
+start_game.next_text, start_game.prev_text = linkedback_to_menu, linkedback_to_menu
+RESULTS_MENU_SELECTED = linked_save_results
 
 
 def draw_menu(text_blink, text_scroll, surface):
@@ -145,17 +153,31 @@ def wait(text_target, index, last_key_wrong):
             return 1, last_key_wrong
     return 3, last_key_wrong
 
-def display_chrono(time_start):
+def display_chrono_training(time_start):
     time_atm = pygame.time.get_ticks()
     time_elapsed = time_atm - time_start
     str_time = str(round(time_elapsed/1000, 1))
-    text_time = text_wpm = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
+    text_time = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
     WIN.blit(text_time, (WIDTH*0.95 - text_time.get_width(), HEIGHT * 0.18))
+
+def display_chrono_chrono(time_start, max_time):
+    time_atm = pygame.time.get_ticks()
+    time_elapsed = time_atm - time_start
+    str_time = str(round((max_time - time_elapsed)/1000, 1))
+    text_time = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
+    WIN.blit(text_time, (WIDTH*0.95 - text_time.get_width(), HEIGHT * 0.18))
+    if max_time - time_elapsed <= 0:
+        return True
+    return False
+
 
 def main():
     APP_RUN = True
     INIT_MENU = True
     run_menu = True
+    MOD_CHRONO = True
+    MOD_TRAINING = False
+    run_game_result = False
     pygame.mixer.music.set_volume(0.05)
     IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
@@ -204,10 +226,11 @@ def main():
             text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
 
         while run_game:
-
+        
             if INIT_MENU:
                 last_key_wrong = False
                 INIT_MENU = False
+                maxtime_chrono = 30000
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
                 test_letter = 0 #0 by default, 1 when test = wrong key, 2 = right key
@@ -311,10 +334,41 @@ def main():
             next_text_game.set_alpha(180)
             WIN.blit(next_text_game, (WIDTH*0.5 - next_text_game.get_width()/2, HEIGHT * 0.57))
 
-            display_chrono(time_start_game)
+            if MOD_CHRONO:
+                chrono_ended = display_chrono_chrono(time_start_game, max_time=maxtime_chrono)
+                if chrono_ended:
+                    run_game_result = True
+                    run_game = False
+
+            pygame.display.update()
+            
+            test_letter, last_key_wrong = wait(current_text, current_index, last_key_wrong)
+        
+        while run_game_result:
+            IMG_BACKGROUND_GAME = IMG_BACKGROUND_RESULTS
+            WIN.blit(IMG_BACKGROUND_GAME, (0,0))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            if MOD_CHRONO:
+                str_results_mod  = "Temps limité: " + str(maxtime_chrono)
+            else:
+                str_results_mod  = str("Pas de temps indiqué")
+            str_results_wpm = "Résultat: " +str(wpm)
+
+            text_results_title =  FONT_ARABOTO_80.render("Résultats", 1, DARK_PURPLE)
+            text_results_mod = FONT_ARABOTO_50.render(str_results_mod, 1, DARK_PURPLE)
+            text_results_wpm = FONT_ARABOTO_50.render(str_results_wpm, 1, DARK_PURPLE)
+
+            WIN.blit(text_results_title, (WIDTH*0.5- text_results_title.get_width()/2, HEIGHT * 0.2))
+            WIN.blit(text_results_mod, (WIDTH*0.5 - text_results_mod.get_width()/2, HEIGHT * 0.5))
+            WIN.blit(text_results_wpm, (WIDTH*0.5 - text_results_wpm.get_width()/2, HEIGHT * 0.7))
+
+            linked_save_results.draw(WIN, text_results_menu_save)
+            linkedback_to_menu.draw(WIN, text_results_menu_save)
             pygame.display.update()
 
-            test_letter, last_key_wrong = wait(current_text, current_index, last_key_wrong)
 
 
 
