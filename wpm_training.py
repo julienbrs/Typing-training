@@ -29,6 +29,11 @@ SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
 )
 SOUND_KEYPAD_WRONG.set_volume(0.08)
 
+SOUND_SELECT_MENU = pygame.mixer.Sound(
+    os.path.join('assets', 'sound_effects', 'menu.wav')
+)
+SOUND_SELECT_MENU.set_volume(0.03)
+
 
 # LOADING SCREEN
 IMG_BACKGROUND_LOADING_SCREEN   = pygame.image.load(os.path.join("./assets/yellow_duck_wp.jpg"))
@@ -44,7 +49,7 @@ WHITE   = (255, 255, 255)
 LIGHT_BLUE = (167, 190, 211)
 YELLOW_ORANGE = (253, 184, 19)
 YELLOW_ORANGE_DARK = (158, 148, 115)
-LIGHT_PURPLE = (153, 93, 206)
+LIGHT_PURPLE = (7, 27, 130)  #todo changer nom (pas du prurple)
 GREY    = (125, 125, 125)
 LIGHT_GREY = (175, 175, 175)
 GREEN_RIGHT = (8, 160, 69)
@@ -57,9 +62,9 @@ FONT_ARABOTO_80  = pygame.font.SysFont("haraboto", 80)
 
 
 text_menu_welcome       = FONT_ARABOTO_80.render("Typing Session", 1, LIGHT_PURPLE)
-text_menu_start_game    = FONT_ARABOTO_50.render("start new session", 1, LIGHT_PURPLE)
-text_menu_dictionnary   = FONT_ARABOTO_50.render("dictionnary (soon)", 1, LIGHT_PURPLE)
-text_menu_leaderboard   = FONT_ARABOTO_50.render("progression (soon)", 1, LIGHT_PURPLE)
+text_menu_start_game    = FONT_ARABOTO_50.render("Start new session", 1, LIGHT_PURPLE)
+text_menu_dictionnary   = FONT_ARABOTO_50.render("Dictionnary (soon)", 1, LIGHT_PURPLE)
+text_menu_leaderboard   = FONT_ARABOTO_50.render("Progression (soon)", 1, LIGHT_PURPLE)
 text_results_menu_save  = FONT_ARABOTO_50.render("Save Results", 1, LIGHT_PURPLE)
 text_results_menu_continue  = FONT_ARABOTO_50.render("Continue", 1, LIGHT_PURPLE)
 
@@ -74,16 +79,17 @@ text_results_menu_continue  = FONT_ARABOTO_50.render("Continue", 1, LIGHT_PURPLE
 class LinkedText():
     "Class to link text for a menu"
 
-    def __init__(self, x, y, next_text, prev_text):
+    def __init__(self, x, y, next_text, prev_text, name = None):
         self.x = x
         self.y = y
+        self.name = name
         self.next_text = next_text
         self.prev_text = prev_text
 
 
-    def draw(self, surface, text):
+    def draw(self, surface, text, menu):
         "draw the text with line or not if selected"
-        if self == MENU_SELECTED:
+        if self == menu:
             new_size = (text.get_width() *1, text.get_height()*1)
             new_text = pygame.transform.scale(text, new_size)
             surface.blit(new_text, (self.x - new_text.get_width()/2,
@@ -105,15 +111,16 @@ dictionnary.next_text = leaderboard
 start_game.next_text, start_game.prev_text = dictionnary, leaderboard
 MENU_SELECTED = start_game
 
-linked_save_results  = LinkedText(WIDTH /2, HEIGHT /3.6, None, None)
-linkedback_to_menu  = LinkedText(WIDTH /2, HEIGHT /2.7, linked_save_results, linked_save_results)
-start_game.next_text, start_game.prev_text = linkedback_to_menu, linkedback_to_menu
+
+linked_save_results  = LinkedText(WIDTH /2, HEIGHT * 0.6, None, None,"Save results") #todo enlever .name
+linkedback_to_menu  = LinkedText(WIDTH /2, HEIGHT * 0.67, linked_save_results, linked_save_results, "Back menu")
+linked_save_results.next_text, linked_save_results.prev_text = linkedback_to_menu, linkedback_to_menu
 RESULTS_MENU_SELECTED = linked_save_results
 
 
 def draw_menu(text_blink, text_scroll, surface):
     "draw the start menu, text_scroll can be up, down or none"
-
+    global MENU_SELECTED
     surface.blit(pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0,0))
 
     text_blink = (text_blink + 1) % 350
@@ -121,10 +128,10 @@ def draw_menu(text_blink, text_scroll, surface):
         surface.blit(text_menu_welcome,((WIDTH - text_menu_welcome.get_width())/2,
                     (HEIGHT/5 - text_menu_welcome.get_height())/2))
 
-    start_game.draw(surface, text_menu_start_game)
-    leaderboard.draw(surface, text_menu_leaderboard)
-    dictionnary.draw(surface, text_menu_dictionnary)
-    global MENU_SELECTED
+    start_game.draw(surface, text_menu_start_game, MENU_SELECTED)
+    leaderboard.draw(surface, text_menu_leaderboard, MENU_SELECTED)
+    dictionnary.draw(surface, text_menu_dictionnary, MENU_SELECTED)
+
     if text_scroll == "DOWN":
         MENU_SELECTED = MENU_SELECTED.next_text
         text_scroll = None
@@ -136,6 +143,39 @@ def draw_menu(text_blink, text_scroll, surface):
     pygame.display.update()
     return text_blink, text_scroll
 
+def draw_menu_results(text_scroll, maxtime_chrono, wpm):
+    global IMG_BACKGROUND_GAME #todo img_bckground
+    global RESULTS_MENU_SELECTED
+    IMG_BACKGROUND_GAME = IMG_BACKGROUND_RESULTS
+    WIN.blit(IMG_BACKGROUND_GAME, (0,0))
+    MOD_CHRONO = True #todo MOD_CHRONO
+    if MOD_CHRONO:
+        str_results_mod  = "Temps limité: " + str(round(maxtime_chrono/1000,1))
+    else:
+        str_results_mod  = str("Pas de temps indiqué")
+    str_results_wpm = "Résultat: " +str(wpm)
+
+    text_results_title =  FONT_ARABOTO_80.render("Résultats", 1, LIGHT_PURPLE)
+    text_results_mod = FONT_ARABOTO_50.render(str_results_mod, 1, LIGHT_PURPLE)
+    text_results_wpm = FONT_ARABOTO_50.render(str_results_wpm, 1, LIGHT_PURPLE)
+
+    WIN.blit(text_results_title, (WIDTH*0.5- text_results_title.get_width()/2, HEIGHT * 0.25))
+    WIN.blit(text_results_mod, (WIDTH*0.5 - text_results_mod.get_width()/2, HEIGHT * 0.37))
+    WIN.blit(text_results_wpm, (WIDTH*0.5 - text_results_wpm.get_width()/2, HEIGHT * 0.44))
+
+    linked_save_results.draw(WIN, text_results_menu_save, RESULTS_MENU_SELECTED)
+    linkedback_to_menu.draw(WIN, text_results_menu_continue, RESULTS_MENU_SELECTED)
+
+    if text_scroll == "DOWN":
+        RESULTS_MENU_SELECTED = RESULTS_MENU_SELECTED.next_text
+        text_scroll = None
+
+    elif text_scroll == "UP":
+        RESULTS_MENU_SELECTED = RESULTS_MENU_SELECTED.prev_text
+        text_scroll = None
+
+    pygame.display.update()
+    return text_scroll
 
 def wait(text_target, index, last_key_wrong):
 
@@ -184,6 +224,7 @@ def main():
     text_blink = 0
     wpm = str(0)
     text_scroll = None
+    result_text_scroll = None
     clock = pygame.time.Clock()
     dictio = manage_dictionnary.main("temp.txt", "dictionnary.txt")
     data = cycle(dictio) #todo: shuffle
@@ -207,18 +248,18 @@ def main():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         text_scroll = "UP"
-                        #pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                         text_blink, text_scroll = draw_menu(text_blink - 1, text_scroll, WIN)
 
                     if event.key == pygame.K_DOWN:
                         text_scroll = "DOWN"
-                        #pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                         text_blink, text_scroll = draw_menu(text_blink - 1, text_scroll, WIN)
 
 
 
                     if event.key == pygame.K_RETURN and MENU_SELECTED == start_game:
-                        #pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                         run_menu = False
                         run_game = True
                         INIT_MENU = True
@@ -345,31 +386,38 @@ def main():
             test_letter, last_key_wrong = wait(current_text, current_index, last_key_wrong)
         
         while run_game_result:
-            IMG_BACKGROUND_GAME = IMG_BACKGROUND_RESULTS
-            WIN.blit(IMG_BACKGROUND_GAME, (0,0))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-            if MOD_CHRONO:
-                str_results_mod  = "Temps limité: " + str(maxtime_chrono)
-            else:
-                str_results_mod  = str("Pas de temps indiqué")
-            str_results_wpm = "Résultat: " +str(wpm)
+                    run_game_result, APP_RUN = False, False
 
-            text_results_title =  FONT_ARABOTO_80.render("Résultats", 1, DARK_PURPLE)
-            text_results_mod = FONT_ARABOTO_50.render(str_results_mod, 1, DARK_PURPLE)
-            text_results_wpm = FONT_ARABOTO_50.render(str_results_wpm, 1, DARK_PURPLE)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        result_text_scroll = "UP"
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        result_text_scroll = draw_menu_results(result_text_scroll, maxtime_chrono, wpm)
 
-            WIN.blit(text_results_title, (WIDTH*0.5- text_results_title.get_width()/2, HEIGHT * 0.2))
-            WIN.blit(text_results_mod, (WIDTH*0.5 - text_results_mod.get_width()/2, HEIGHT * 0.5))
-            WIN.blit(text_results_wpm, (WIDTH*0.5 - text_results_wpm.get_width()/2, HEIGHT * 0.7))
-
-            linked_save_results.draw(WIN, text_results_menu_save)
-            linkedback_to_menu.draw(WIN, text_results_menu_save)
-            pygame.display.update()
+                    if event.key == pygame.K_DOWN:
+                        result_text_scroll = "DOWN"
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        result_text_scroll = draw_menu_results(result_text_scroll, maxtime_chrono, wpm)
 
 
+
+                    if event.key == pygame.K_RETURN and RESULTS_MENU_SELECTED == linkedback_to_menu:
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        run_menu = True
+                        run_game = False
+                        run_game_result = False
+                        INIT_MENU = False
+
+                    if event.key == pygame.K_RETURN and RESULTS_MENU_SELECTED == linked_save_results:
+                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                        run_menu = True
+                        run_game = False
+                        run_game_result = False
+                        INIT_MENU = False
+
+            result_text_scroll = draw_menu_results(result_text_scroll, maxtime_chrono, wpm)
 
 
 

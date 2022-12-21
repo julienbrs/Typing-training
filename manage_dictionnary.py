@@ -1,5 +1,5 @@
 from collections import OrderedDict
-
+import random
 def extract(source):
     list_words = []
     with open(source) as f:
@@ -9,7 +9,7 @@ def extract(source):
             for char in line:
                 if char != " ":
                     word += char
-                else:
+                elif char == " " and word != "":
                     list_words.append(word)
                     word = ""
     return list_words
@@ -34,15 +34,14 @@ def main(source, dest):
                 if char in ("|", " ") and word != "":
                     new_words.append(word)
                     word = ""
-                elif char not in ("|", " ", "-"):
+                elif char not in ("|", " "):
                     word += str(char)
             new_words.append(word)
 
     temp_dico = new_words + already_used
-
     #final_words = [i for n, i in enumerate(temp_dico) if i not in temp_dico[:n]]
     final_words = list(OrderedDict.fromkeys(temp_dico))     #utiliser methode compréhension liste ? 
-
+    random.shuffle(final_words)
 
     final_dico = []
     line = ""
@@ -50,9 +49,9 @@ def main(source, dest):
         if len(line) + len(word) <= 40:
             line += word + " "
         else:
-            final_dico.append(line)
+            final_dico.append(line + " ")
             line = word + " "
-    final_dico.append(line)
+    final_dico.append(line + " ")
 
     with open(dest, 'w') as f:
         f.writelines('\n'.join(final_dico))
