@@ -203,6 +203,23 @@ class BackgroundManager:
     def display(self):
         WIN.blit(self.IMG_BACKGROUND_GAME, (0, 0))
 
+class TextManager:
+    def __init__(self):
+        self.data = initialize_game()
+        self.current_text = next(self.data)
+        self.next_text = next(self.data)
+
+    def next_text_set(self):
+        self.current_text = self.next_text
+        try:
+            self.next_text = next(self.data)
+        except StopIteration:
+            self.next_text = None  # or some default text
+
+    def is_current_text_finished(self, current_index):
+        return current_index >= len(self.current_text) - 1
+
+
 
 def handle_menu_event(event, text_blink, text_scroll, state):
 
@@ -235,18 +252,14 @@ def handle_menu_event(event, text_blink, text_scroll, state):
 def main():
     state = GameState()
     bg_manager = BackgroundManager()
+    text_manager = TextManager() 
     pygame.mixer.music.set_volume(0.05)
-
-    data = initialize_game()
 
     clock = pygame.time.Clock()
     text_blink = 0
     wpm = str(0)
     text_scroll = None
     result_text_scroll = None
-
-    current_text = next(data)
-    next_text = next(data)
 
     while state.APP_RUN:
         clock.tick(FPS)
@@ -278,12 +291,12 @@ def main():
                 font.origin = True
                 M_ADV_X = 4  # todo ??? Madv_x
                 # let's calculate how big the entire line of text is
-                text_surf_rect = font.get_rect(current_text)
+                text_surf_rect = font.get_rect(text_manager.current_text)
                 text_surf_rect.size = (
                     text_surf_rect.size[0] * 1.1,
                     text_surf_rect.size[1],
                 )  # todo plus élégant
-                text_surf_background_rect = font.get_rect(current_text)
+                text_surf_background_rect = font.get_rect(text_manager.current_text)
                 text_surf_background_rect.size = (
                     text_surf_rect.width * 1.15,
                     text_surf_rect.height * 1.7,
@@ -301,25 +314,24 @@ def main():
                 text_surf_background_rect.center = WIN.get_rect().center
                 text_surf_rect.center = WIN.get_rect().center
                 # calculate the width (and other stuff) for each letter of the text
-                metrics = font.get_metrics(current_text)
+                metrics = font.get_metrics(text_manager.current_text)
                 start_time = time.time()
                 # todo gérer fin de phrase
 
             time_elapsed = max(time.time() - start_time, 1)
             wpm = str(round((char_typed / (time_elapsed / 60)) / 5))
             # if test_letter !=3:
-            if current_index >= len(current_text) - 1:
+            if text_manager.is_current_text_finished(current_index):
                 # if the sentence is complete, let's prepare the
                 # next surface
                 current_index = 0
-                current_text = next_text
-                next_text = next(data)
-                text_surf_rect = font.get_rect(current_text)
+                text_manager.next_text_set()
+                text_surf_rect = font.get_rect(text_manager.current_text)
                 baseline = text_surf_rect.y
 
                 text_surf = pygame.Surface(text_surf_rect.size)
                 text_surf_rect.center = text_surf_background_rect.center
-                metrics = font.get_metrics(current_text)
+                metrics = font.get_metrics(text_manager.current_text)
                 test_letter = 0
 
             if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.CORRECT:
@@ -336,7 +348,7 @@ def main():
             text_surf.fill(YELLOW_ORANGE)
 
             x = 0
-            for (idx, (letter, metric)) in enumerate(zip(current_text, metrics)):
+            for (idx, (letter, metric)) in enumerate(zip(text_manager.current_text, metrics)):
                 # Set default color
                 color = DARK_PURPLE
 
@@ -379,7 +391,8 @@ def main():
             WIN.blit(text_surf, text_surf_rect)
             pygame.draw.line(WIN, color_line, start_pos, end_pos, width=5)
 
-            next_text_game = FONT_HELVETICA.render(next_text, 1, DARK_PURPLE)
+            next_text_game = FONT_HELVETICA.render(
+                text_manager.next_text, 1, DARK_PURPLE)
             next_text_game.set_alpha(180)
             WIN.blit(
                 next_text_game,
@@ -397,7 +410,7 @@ def main():
             pygame.display.update()
 
             test_letter, last_key_wrong = handle_key_press_event(
-                current_text, current_index, last_key_wrong
+                text_manager.current_text, current_index, last_key_wrong
             )
 
         while state.run_game_result:
