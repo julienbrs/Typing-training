@@ -2,7 +2,8 @@ import pygame
 import pygame.freetype
 import sys
 
-from classes.constants import SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU
+from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, MENU_SELECTED, RESULTS_MENU_SELECTED, start_game, linkedback_to_menu, linked_save_results, KeyPressResponse
+from .uimanager import draw_menu, draw_menu_results
 
 class EventHandler:
     def __init__(self, state, text_manager, background_manager, ui_manager):
