@@ -42,7 +42,8 @@ from constants import (
     MENU_SELECTED,
     linked_save_results,
     linkedback_to_menu,
-    RESULTS_MENU_SELECTED
+    RESULTS_MENU_SELECTED,
+    KeyPressResponse
 )
 
 # Initialize Pygame modules
@@ -128,27 +129,34 @@ def handle_key_press_event(text_target, index, last_key_wrong):
             if event.unicode == text_target[index]:
                 pygame.mixer.Sound.play(SOUND_KEYPAD)
                 last_key_wrong = False
-                return 2, last_key_wrong
+                return KeyPressResponse.CORRECT, last_key_wrong
             pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
             last_key_wrong = True
-            return 1, last_key_wrong
-    return 3, last_key_wrong
+            return KeyPressResponse.WRONG, last_key_wrong
+    return KeyPressResponse.NO_ACTION, last_key_wrong
 
 
-def display_chrono_training(time_start):
+def blit_text_to_window(text, position):
+    WIN.blit(text, position)
+
+
+def display_elapsed_time(time_start):
     time_atm = pygame.time.get_ticks()
     time_elapsed = time_atm - time_start
     str_time = str(round(time_elapsed / 1000, 1))
     text_time = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
-    WIN.blit(text_time, (WIDTH * 0.95 - text_time.get_width(), HEIGHT * 0.18))
+    blit_text_to_window(
+        text_time, (WIDTH * 0.95 - text_time.get_width(), HEIGHT * 0.18))
 
 
-def display_chrono_chrono(time_start, max_time):
+def display_remaining_time(time_start, max_time):
     time_atm = pygame.time.get_ticks()
     time_elapsed = time_atm - time_start
     str_time = str(round((max_time - time_elapsed) / 1000, 1))
     text_time = FONT_ARABOTO_50.render(str_time, 1, DARK_PURPLE)
-    WIN.blit(text_time, (WIDTH * 0.95 - text_time.get_width(), HEIGHT * 0.18))
+    blit_text_to_window(
+        text_time, (WIDTH * 0.95 - text_time.get_width(), HEIGHT * 0.18))
+
     if max_time - time_elapsed <= 0:
         return True
     return False
@@ -220,7 +228,7 @@ def main():
                 maxtime_chrono = 30000
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
-                test_letter = 0  # 0 by default, 1 when test = wrong key, 2 = right key
+                test_letter = KeyPressResponse.NO_TEST
                 IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
                 WIN.blit(pygame.transform.scale(
@@ -276,12 +284,12 @@ def main():
                 metrics = font.get_metrics(current_text)
                 test_letter = 0
 
-            if test_letter == 0 or test_letter == 2:
+            if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.CORRECT:
                 IMG_BACKGROUND_GAME = pygame.transform.scale(
                     IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE
                 )
                 WIN.blit(IMG_BACKGROUND_GAME, (0, 0))
-            elif test_letter == 1:
+            elif test_letter == KeyPressResponse.WRONG:
                 IMG_BACKGROUND_GAME = pygame.transform.scale(
                     IMG_BACKGROUND_GAME_WRONG, WIN_SIZE
                 )
@@ -298,7 +306,10 @@ def main():
 
             x = 0
             for (idx, (letter, metric)) in enumerate(zip(current_text, metrics)):
-                # select the right color
+                # Set default color
+                color = DARK_PURPLE
+
+                #  select the right color
                 if idx == current_index:
                     start_pos = (
                         text_surf_rect.x + x + 3,
@@ -308,22 +319,21 @@ def main():
                         text_surf_rect.x + x + metric[M_ADV_X] - 5,
                         text_surf_rect.y + text_surf_rect.height - 5,
                     )
-                    if (
-                        test_letter == 0 or test_letter == 3
-                    ):  # means "no test atm", todo in method
+                    # todo : no_action necessary ?
+                    if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.NO_ACTION:
                         if last_key_wrong:
                             color = RED_WRONG
                         else:
                             color = "lightblue"
-                    elif test_letter == 1:  # test wrong key
+                    elif test_letter == KeyPressResponse.WRONG:
                         color = RED_WRONG
-                    elif test_letter == 2:
+                    elif test_letter == KeyPressResponse.CORRECT:
                         color = GREEN_RIGHT
                         current_index += 1
                         char_typed += 1
-                        test_letter = 0
-                    else:  # todo error mieux
-                        print("ERROR")
+                        test_letter = KeyPressResponse.NO_TEST
+                    else:
+                        print(f"Error: {test_letter} not in enum")
                     color_line = color
                 elif idx < current_index:
                     color = GREEN_RIGHT
@@ -346,7 +356,7 @@ def main():
             )
 
             if MOD_CHRONO:
-                chrono_ended = display_chrono_chrono(
+                chrono_ended = display_remaining_time(
                     time_start_game, max_time=maxtime_chrono
                 )
                 if chrono_ended:

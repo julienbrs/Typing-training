@@ -1,6 +1,7 @@
 import pygame
 import pygame.freetype
 import os
+from enum import Enum
 
 pygame.mixer.init()
 pygame.font.init()
@@ -130,3 +131,11 @@ linked_save_results.next_text, linked_save_results.prev_text = (
     linkedback_to_menu,
 )
 RESULTS_MENU_SELECTED = linked_save_results
+
+
+class KeyPressResponse(Enum):
+    NO_TEST = 0
+    WRONG = 1
+    CORRECT = 2
+    NO_ACTION = 3
+
