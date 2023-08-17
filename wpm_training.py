@@ -266,7 +266,7 @@ class UIManager:
                     color = RED_WRONG
                 elif test_letter == KeyPressResponse.CORRECT:
                     color = GREEN_RIGHT
-                    
+
                 else:
                     print(f"Error: {test_letter} not in enum")
 
@@ -294,7 +294,7 @@ class EventHandler:
         self.text_manager = text_manager
         self.background_manager = background_manager
         self.ui_manager = ui_manager
-        self.maxtime_chrono = 5000
+        self.maxtime_chrono = 2500
         self.wpm = None
 
     def handle_key_press_event(self, text_target, current_index, last_key_wrong):
@@ -369,7 +369,6 @@ class EventHandler:
         return new_text_blink, new_text_scroll, current_index, last_key_wrong
 
     def handle_game_result_event(self, event, result_text_scroll, result_text_blink, current_index, last_key_wrong):
-        result_text_scroll = None
         if event.type == pygame.QUIT:
             self.state.run_game_result, self.state.APP_RUN = False, False
 
@@ -403,7 +402,10 @@ class EventHandler:
                     self.state.run_game_result = False
                     self.state.INIT_MENU = False
 
-        return result_text_scroll, result_text_blink, current_index, last_key_wrong
+            if result_text_blink is None:
+                result_text_blink = 0
+
+        return result_text_blink, result_text_scroll, current_index, last_key_wrong
 
 
 def main():
@@ -425,7 +427,6 @@ def main():
 
     while state.APP_RUN:
         clock.tick(FPS)
-
         for event in pygame.event.get():
             text_blink, text_scroll, current_index, last_key_wrong = event_handler.handle_event(
                 event, text_blink, text_scroll, current_index, last_key_wrong)
