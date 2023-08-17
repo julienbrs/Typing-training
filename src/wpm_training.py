@@ -5,45 +5,11 @@ import pygame
 import pygame.freetype
 import os
 from itertools import cycle
-import manage_dictionnary
+from utils.manage_dictionnary import main as manage_dictionnary_main
+from classes.gamestate import GameState
 
 # imports from constants module
-from constants import (
-    WIN,
-    WIDTH,
-    HEIGHT,
-    FPS,
-    WIN_SIZE,
-    YELLOW_ORANGE,
-    DEEP_BLUE,
-    GREEN_RIGHT,
-    DARK_PURPLE,
-    RED_WRONG,
-    SOUND_KEYPAD,
-    SOUND_KEYPAD_WRONG,
-    SOUND_SELECT_MENU,
-    IMG_BACKGROUND_LOADING_SCREEN,
-    IMG_BACKGROUND_GAME_RIGHT,
-    IMG_BACKGROUND_GAME_WRONG,
-    IMG_BACKGROUND_RESULTS,
-    FONT_HELVETICA,
-    FONT_ARABOTO_50,
-    FONT_ARABOTO_80,
-    text_menu_welcome,
-    text_menu_start_game,
-    text_menu_dictionnary,
-    text_menu_leaderboard,
-    text_results_menu_save,
-    text_results_menu_continue,
-    start_game,
-    dictionnary,
-    leaderboard,
-    MENU_SELECTED,
-    linked_save_results,
-    linkedback_to_menu,
-    RESULTS_MENU_SELECTED,
-    KeyPressResponse
-)
+from constants import *
 
 # Initialize Pygame modules
 pygame.freetype.init()
@@ -147,29 +113,13 @@ def display_remaining_time(time_start, max_time):
 
 def initialize_game():
     pygame.mixer.music.set_volume(0.05)
-    dictio = manage_dictionnary.main("temp.txt", "dictionnary.txt")
+    dictio = manage_dictionnary_main("temp.txt", "dictionnary.txt")
     data = cycle(dictio)
     pygame.mixer.music.load(
-        os.path.join("assets", "sound_effects", "background_music.mp3")
+        os.path.join("src","assets", "sound_effects", "background_music.mp3")
     )
     pygame.mixer.music.play(-1)
     return data
-
-
-class GameState:
-    def __init__(self):
-        self.APP_RUN = True
-        self.INIT_MENU = True
-        self.MOD_CHRONO = True
-        self.MOD_TRAINING = False
-        self.run_game = False
-        self.run_menu = True
-        self.run_game_result = False
-        self.time_start_game = 0
-        # Add any other variables you need here
-
-    def quit(self):
-        self.APP_RUN = False
 
 
 class BackgroundManager:
@@ -445,8 +395,8 @@ def main():
                 bg_manager.display()
 
                 current_index = 0
-                font = pygame.freetype.Font(
-                    os.path.join("fonts", "Helvetica.ttf"), 50)
+                font_path = os.path.join(os.path.dirname(__file__), "assets", "fonts", "Helvetica.ttf")
+                font = pygame.freetype.Font(font_path, 50)
                 font.origin = True
                 # let's calculate how big the entire line of text is
                 text_surf_rect = font.get_rect(text_manager.current_text)

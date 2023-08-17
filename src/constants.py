@@ -28,29 +28,29 @@ WIN = pygame.display.set_mode(WIN_SIZE)
 pygame.display.set_caption("Typing Training")
 
 # Load Sounds
-SOUND_KEYPAD = pygame.mixer.Sound(os.path.join(
+SOUND_KEYPAD = pygame.mixer.Sound(os.path.join("src",
     "assets", "sound_effects", "keypad.mp3"))
 SOUND_KEYPAD.set_volume(0.08)
 SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
-    os.path.join("assets", "sound_effects", "wrong.wav")
+    os.path.join("src","assets", "sound_effects", "wrong.wav")
 )
 SOUND_KEYPAD_WRONG.set_volume(0.08)
 SOUND_SELECT_MENU = pygame.mixer.Sound(
-    os.path.join("assets", "sound_effects", "menu.wav")
+    os.path.join("src","assets", "sound_effects", "menu.wav")
 )
 SOUND_SELECT_MENU.set_volume(0.03)
 
 # Load Images
 IMG_BACKGROUND_LOADING_SCREEN = pygame.image.load(
-    os.path.join("./assets/yellow_duck_wp.jpg"))
+    os.path.join("./src/assets/images/yellow_duck_wp.jpg"))
 IMG_BACKGROUND_GAME_RIGHT = pygame.image.load(
-    os.path.join("./assets/yellow_wallpaper_right.jpg")
+    os.path.join("./src/assets/images/yellow_wallpaper_right.jpg")
 )
 IMG_BACKGROUND_GAME_WRONG = pygame.image.load(
-    os.path.join("./assets/yellow_wallpaper_wrong.jpg")
+    os.path.join("./src/assets/images/yellow_wallpaper_wrong.jpg")
 )
 IMG_BACKGROUND_RESULTS = pygame.image.load(
-    os.path.join("./assets/yellow_wp_results.jpg")
+    os.path.join("./src/assets/images/yellow_wp_results.jpg")
 )
 
 # Fonts
