@@ -1,7 +1,6 @@
 # pylint: disable=no-member
 # pylint: disable=W0603     disable global variable warning
 import sys
-import time
 import pygame
 import pygame.freetype
 import os
@@ -120,21 +119,6 @@ def draw_menu_results(text_scroll, maxtime_chrono, wpm, mode):
     return text_scroll
 
 
-def handle_key_press_event(text_target, current_index, last_key_wrong):
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.unicode == text_target[current_index]:
-                pygame.mixer.Sound.play(SOUND_KEYPAD)
-                last_key_wrong = False
-                current_index += 1
-            pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
-            last_key_wrong = True
-    return KeyPressResponse.NO_ACTION, last_key_wrong, current_index
-
-
 def blit_text_to_window(text, position):
     WIN.blit(text, position)
 
@@ -181,6 +165,7 @@ class GameState:
         self.run_game = False
         self.run_menu = True
         self.run_game_result = False
+        self.time_start_game = 0
         # Add any other variables you need here
 
     def quit(self):
@@ -280,8 +265,8 @@ class UIManager:
                 elif test_letter == KeyPressResponse.WRONG:
                     color = RED_WRONG
                 elif test_letter == KeyPressResponse.CORRECT:
-                    print(f"Correct: {test_letter} in enum")
                     color = GREEN_RIGHT
+                    
                 else:
                     print(f"Error: {test_letter} not in enum")
 
@@ -303,32 +288,122 @@ class UIManager:
         pygame.draw.line(self.WIN, color, start_pos, end_pos, width=5)
 
 
-def handle_menu_event(event, text_blink, text_scroll, state):
+class EventHandler:
+    def __init__(self, state, text_manager, background_manager, ui_manager):
+        self.state = state
+        self.text_manager = text_manager
+        self.background_manager = background_manager
+        self.ui_manager = ui_manager
+        self.maxtime_chrono = 5000
+        self.wpm = None
 
-    if event.type == pygame.QUIT:
-        state.run_menu = False
-        state.APP_RUN = False
+    def handle_key_press_event(self, text_target, current_index, last_key_wrong):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.unicode == text_target[current_index]:
+                    pygame.mixer.Sound.play(SOUND_KEYPAD)
+                    self.background_manager.set_right()
+                    last_key_wrong = False
+                    current_index += 1
+                else:
+                    pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
+                    self.background_manager.set_wrong()
+                    last_key_wrong = True
+        self.background_manager.display()
+        return KeyPressResponse.NO_ACTION, last_key_wrong, current_index
 
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_UP:
-            text_scroll = "UP"
-            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-            text_blink, text_scroll = draw_menu(
-                text_blink - 1, text_scroll, WIN)
+    def handle_event(self, event, text_blink=0, text_scroll=None, current_index=0, last_key_wrong=False):
+        if self.state.run_menu:
+            return self._handle_menu_event(event, text_blink, text_scroll, current_index, last_key_wrong)
+        elif self.state.run_game:
+            return self._handle_game_event(event, text_blink, text_scroll, self.text_manager.current_text, current_index, last_key_wrong)
+        elif self.state.run_game_result:
+            return self.handle_game_result_event(event, text_blink, text_scroll, current_index, last_key_wrong)
 
-        elif event.key == pygame.K_DOWN:
-            text_scroll = "DOWN"
-            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-            text_blink, text_scroll = draw_menu(
-                text_blink - 1, text_scroll, WIN)
+    def _handle_menu_event(self, event, text_blink, text_scroll, current_index, last_key_wrong):
+        if event.type == pygame.QUIT:
+            self.state.run_menu = False
+            self.state.APP_RUN = False
 
-        elif event.key == pygame.K_RETURN and MENU_SELECTED == start_game:
-            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-            state.run_menu = False
-            state.run_game = True
-            state.INIT_MENU = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                text_scroll = "UP"
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                text_blink, text_scroll = draw_menu(
+                    text_blink - 1, text_scroll, WIN)
 
-    return text_blink, text_scroll
+            elif event.key == pygame.K_DOWN:
+                text_scroll = "DOWN"
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                text_blink, text_scroll = draw_menu(
+                    text_blink - 1, text_scroll, WIN)
+
+            elif event.key == pygame.K_RETURN and MENU_SELECTED == start_game:
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                self.state.run_menu = False
+                self.state.run_game = True
+                self.state.INIT_MENU = True
+        return text_blink, text_scroll, current_index, last_key_wrong
+
+    def _handle_game_event(self, event, text_blink, text_scroll, text_target, current_index, last_key_wrong):
+        # Return these by default if no events change them
+        new_text_blink = text_blink
+        new_text_scroll = text_scroll
+
+        if event.type == pygame.QUIT:
+            self.state.run_game = False
+            self.state.APP_RUN = False
+
+        elif event.type == pygame.KEYDOWN:
+            if event.unicode == text_target[current_index]:
+                pygame.mixer.Sound.play(SOUND_KEYPAD)
+                last_key_wrong = False
+                current_index += 1
+            else:
+                pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
+                last_key_wrong = True
+
+        return new_text_blink, new_text_scroll, current_index, last_key_wrong
+
+    def handle_game_result_event(self, event, result_text_scroll, result_text_blink, current_index, last_key_wrong):
+        result_text_scroll = None
+        if event.type == pygame.QUIT:
+            self.state.run_game_result, self.state.APP_RUN = False, False
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                result_text_scroll = "UP"
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                # You might need to modify this to return or handle result_text_scroll if necessary
+                draw_menu_results(result_text_scroll,
+                                  self.maxtime_chrono, self.wpm, mode="MOD_CHRONO")
+
+            elif event.key == pygame.K_DOWN:
+                result_text_scroll = "DOWN"
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                # You might need to modify this to return or handle result_text_scroll if necessary
+                draw_menu_results(result_text_scroll,
+                                  self.maxtime_chrono, self.wpm, mode="MOD_CHRONO")
+
+            elif event.key == pygame.K_RETURN:
+                if RESULTS_MENU_SELECTED == linkedback_to_menu:
+                    pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                    self.state.run_menu = True
+                    self.state.run_game = False
+                    self.state.run_game_result = False
+                    self.state.INIT_MENU = False
+
+                elif RESULTS_MENU_SELECTED == linked_save_results:
+                    pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                    self.state.run_menu = True
+                    self.state.run_game = False
+                    self.state.run_game_result = False
+                    self.state.INIT_MENU = False
+
+        return result_text_scroll, result_text_blink, current_index, last_key_wrong
 
 
 def main():
@@ -336,6 +411,7 @@ def main():
     bg_manager = BackgroundManager()
     text_manager = TextManager()
     ui_manager = UIManager(WIN)
+    event_handler = EventHandler(state, text_manager, bg_manager, ui_manager)
     pygame.mixer.music.set_volume(0.05)
 
     clock = pygame.time.Clock()
@@ -343,28 +419,27 @@ def main():
     wpm = str(0)
     text_scroll = None
     result_text_scroll = None
+    current_index = 0
+    last_key_wrong = False
+    test_letter = KeyPressResponse.NO_TEST
 
     while state.APP_RUN:
         clock.tick(FPS)
-        while state.run_menu:
 
+        for event in pygame.event.get():
+            text_blink, text_scroll, current_index, last_key_wrong = event_handler.handle_event(
+                event, text_blink, text_scroll, current_index, last_key_wrong)
+
+        if state.run_menu:
             if state.INIT_MENU:
                 state.INIT_MENU = False
-
-            for event in pygame.event.get():
-                text_blink, text_scroll = handle_menu_event(
-                    event, text_blink, text_scroll, state)
             text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
 
-        while state.run_game:
-
+        elif state.run_game:
             if state.INIT_MENU:
                 last_key_wrong = False
                 state.INIT_MENU = False
-                maxtime_chrono = 30000
-                time_start_game = pygame.time.get_ticks()
-                char_typed = 0
-                test_letter = KeyPressResponse.NO_TEST
+                state.time_start_game = pygame.time.get_ticks()
                 bg_manager.set_right()
                 bg_manager.display()
 
@@ -388,11 +463,6 @@ def main():
                 text_surf_background_rect.center = WIN.get_rect().center
                 text_surf_rect.center = WIN.get_rect().center
                 # calculate the width (and other stuff) for each letter of the text
-                start_time = time.time()
-                # todo gérer fin de phrase
-
-            time_elapsed = max(time.time() - start_time, 1)
-            wpm = str(round((char_typed / (time_elapsed / 60)) / 5))
 
             if text_manager.is_current_text_finished(current_index):
                 # if the sentence is complete, let's prepare the  next surface
@@ -401,12 +471,6 @@ def main():
                 text_surf_rect = font.get_rect(text_manager.current_text)
                 test_letter = 0
 
-            if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.CORRECT:
-                bg_manager.set_right()
-            elif test_letter == KeyPressResponse.WRONG:
-                bg_manager.set_wrong()
-
-            bg_manager.display()
             ui_manager.display_wpm(wpm)
 
             ui_manager.draw_current_text(
@@ -416,61 +480,20 @@ def main():
 
             if state.MOD_CHRONO:
                 chrono_ended = display_remaining_time(
-                    time_start_game, max_time=maxtime_chrono
-                )
+                    state.time_start_game, max_time=event_handler.maxtime_chrono)
                 if chrono_ended:
                     state.run_game_result = True
                     state.run_game = False
 
             pygame.display.update()
 
-            test_letter, last_key_wrong, current_index = handle_key_press_event(
+            test_letter, last_key_wrong, current_index = event_handler.handle_key_press_event(
                 text_manager.current_text, current_index, last_key_wrong
             )
 
-        while state.run_game_result:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    state.run_game_result, state.APP_RUN = False, False
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        result_text_scroll = "UP"
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        result_text_scroll = draw_menu_results(
-                            result_text_scroll, maxtime_chrono, wpm, mode="MOD_CHRONO"
-                        )
-
-                    if event.key == pygame.K_DOWN:
-                        result_text_scroll = "DOWN"
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        result_text_scroll = draw_menu_results(
-                            result_text_scroll, maxtime_chrono, wpm, mode="MOD_CHRONO"
-                        )
-
-                    if (
-                        event.key == pygame.K_RETURN
-                        and RESULTS_MENU_SELECTED == linkedback_to_menu
-                    ):
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        state.run_menu = True
-                        state.run_game = False
-                        state.run_game_result = False
-                        state.INIT_MENU = False
-
-                    if (
-                        event.key == pygame.K_RETURN
-                        and RESULTS_MENU_SELECTED == linked_save_results
-                    ):
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        state.run_menu = True
-                        state.run_game = False
-                        state.run_game_result = False
-                        state.INIT_MENU = False
-
+        elif state.run_game_result:
             result_text_scroll = draw_menu_results(
-                result_text_scroll, maxtime_chrono, wpm, mode="MOD_CHRONO"
-            )
+                result_text_scroll, event_handler.maxtime_chrono, wpm, mode="MOD_CHRONO")
 
 
 if __name__ == "__main__":
