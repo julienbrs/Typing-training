@@ -1,62 +1,43 @@
-from collections import OrderedDict
 import random
-def extract(source):
-    list_words = []
-    with open(source) as f:
-        lines = f.readlines()
-        for line in lines:
-            word = ""
-            for char in line:
-                if char != " ":
-                    word += char
-                elif char == " " and word != "":
-                    list_words.append(word)
-                    word = ""
-    return list_words
 
 
+def extract_words_from_file(filename):
+    """Extracts words from a file separated by spaces."""
+    with open(filename, 'r') as file:
+        return file.read().split()
 
-def affiche(dico):
-    print("on print le dico ")
-    for word in dico:
-        print(word, len(word))
-    print("")
 
 def main(source, dest):
-    already_used = extract(dest)
-    new_words = []
-    with open(source) as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.strip()
-            word = ""
-            for char in line:
-                if char in ("|", " ") and word != "":
-                    new_words.append(word)
-                    word = ""
-                elif char not in ("|", " "):
-                    word += str(char)
-            new_words.append(word)
+    """Extracts, combines, shuffles words from source and dest. Then writes them back to dest."""
+    # Extract words from source and dest
+    new_words = extract_words_from_file(source)
+    already_used_words = extract_words_from_file(dest)
 
-    temp_dico = new_words + already_used
-    #final_words = [i for n, i in enumerate(temp_dico) if i not in temp_dico[:n]]
-    final_words = list(OrderedDict.fromkeys(temp_dico))     #utiliser methode compréhension liste ? 
-    random.shuffle(final_words)
+    # Combine and de-duplicate words
+    combined_words = list(set(new_words + already_used_words))
 
-    final_dico = []
+    # Shuffle the words
+    random.shuffle(combined_words)
+
+    # Organize words into lines <= 40 characters
+    lines = []
     line = ""
-    for word in final_words:
+    for word in combined_words:
         if len(line) + len(word) <= 40:
             line += word + " "
         else:
-            final_dico.append(line + " ")
+            # Strip is used to remove trailing space
+            lines.append(line.strip())
             line = word + " "
-    final_dico.append(line + " ")
+    if line:
+        lines.append(line.strip())
 
-    with open(dest, 'w') as f:
-        f.writelines('\n'.join(final_dico))
+    # Write the organized words back to dest
+    with open(dest, 'w') as file:
+        file.write('\n'.join(lines))
 
-    return final_dico
+    return lines
+
 
 if __name__ == "__main__":
-    main("temp.txt", "dictionnary.txt")
+    main("temp.txt", "dictionary.txt")
