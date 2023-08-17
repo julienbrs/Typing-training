@@ -162,69 +162,93 @@ def display_remaining_time(time_start, max_time):
     return False
 
 
-def main():
-    APP_RUN = True
-    INIT_MENU = True
-    run_menu = True
-    MOD_CHRONO = True
-    MOD_TRAINING = False
-    run_game_result = False
+def initialize_game():
     pygame.mixer.music.set_volume(0.05)
-    IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
-
-    text_blink = 0
-    wpm = str(0)
-    text_scroll = None
-    result_text_scroll = None
-    clock = pygame.time.Clock()
     dictio = manage_dictionnary.main("temp.txt", "dictionnary.txt")
-    data = cycle(dictio)  # todo: shuffle
-
-    current_text = next(data)
-    next_text = next(data)
+    data = cycle(dictio)
     pygame.mixer.music.load(
         os.path.join("assets", "sound_effects", "background_music.mp3")
     )
     pygame.mixer.music.play(-1)
-    while APP_RUN:
-        clock.tick(FPS)
-        while run_menu:
+    return data
 
-            if INIT_MENU:
-                INIT_MENU = False
+
+class GameState:
+    def __init__(self):
+        self.APP_RUN = True
+        self.INIT_MENU = True
+        self.MOD_CHRONO = True
+        self.MOD_TRAINING = False
+        self.run_game = False
+        self.run_menu = True
+        self.run_game_result = False
+        # Add any other variables you need here
+
+    def quit(self):
+        self.APP_RUN = False
+
+
+def handle_menu_event(event, text_blink, text_scroll, state):
+
+    if event.type == pygame.QUIT:
+        state.run_menu = False
+        state.APP_RUN = False
+
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_UP:
+            text_scroll = "UP"
+            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+            text_blink, text_scroll = draw_menu(
+                text_blink - 1, text_scroll, WIN)
+
+        elif event.key == pygame.K_DOWN:
+            text_scroll = "DOWN"
+            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+            text_blink, text_scroll = draw_menu(
+                text_blink - 1, text_scroll, WIN)
+
+        elif event.key == pygame.K_RETURN and MENU_SELECTED == start_game:
+            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+            state.run_menu = False
+            state.run_game = True
+            state.INIT_MENU = True
+
+    return text_blink, text_scroll
+
+
+def main():
+    state = GameState()
+
+    pygame.mixer.music.set_volume(0.05)
+    IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
+
+    data = initialize_game()
+
+    clock = pygame.time.Clock()
+    text_blink = 0
+    wpm = str(0)
+    text_scroll = None
+    result_text_scroll = None
+
+    current_text = next(data)
+    next_text = next(data)
+
+    while state.APP_RUN:
+        clock.tick(FPS)
+        while state.run_menu:
+
+            if state.INIT_MENU:
+                state.INIT_MENU = False
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    run_menu, APP_RUN = False, False
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        text_scroll = "UP"
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        text_blink, text_scroll = draw_menu(
-                            text_blink - 1, text_scroll, WIN
-                        )
-
-                    if event.key == pygame.K_DOWN:
-                        text_scroll = "DOWN"
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        text_blink, text_scroll = draw_menu(
-                            text_blink - 1, text_scroll, WIN
-                        )
-
-                    if event.key == pygame.K_RETURN and MENU_SELECTED == start_game:
-                        pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        run_menu = False
-                        run_game = True
-                        INIT_MENU = True
-
+                text_blink, text_scroll = handle_menu_event(event, text_blink, text_scroll, state)
             text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
 
-        while run_game:
+        while state.run_game:
 
-            if INIT_MENU:
+            if state.INIT_MENU:
                 last_key_wrong = False
-                INIT_MENU = False
+                state.INIT_MENU = False
                 maxtime_chrono = 30000
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
@@ -355,13 +379,13 @@ def main():
                 (WIDTH * 0.5 - next_text_game.get_width() / 2, HEIGHT * 0.57),
             )
 
-            if MOD_CHRONO:
+            if state.MOD_CHRONO:
                 chrono_ended = display_remaining_time(
                     time_start_game, max_time=maxtime_chrono
                 )
                 if chrono_ended:
-                    run_game_result = True
-                    run_game = False
+                    state.run_game_result = True
+                    state.run_game = False
 
             pygame.display.update()
 
@@ -369,10 +393,10 @@ def main():
                 current_text, current_index, last_key_wrong
             )
 
-        while run_game_result:
+        while state.run_game_result:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run_game_result, APP_RUN = False, False
+                    state.run_game_result, state.APP_RUN = False, False
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
@@ -394,20 +418,20 @@ def main():
                         and RESULTS_MENU_SELECTED == linkedback_to_menu
                     ):
                         pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        run_menu = True
-                        run_game = False
-                        run_game_result = False
-                        INIT_MENU = False
+                        state.run_menu = True
+                        state.run_game = False
+                        state.run_game_result = False
+                        state.INIT_MENU = False
 
                     if (
                         event.key == pygame.K_RETURN
                         and RESULTS_MENU_SELECTED == linked_save_results
                     ):
                         pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                        run_menu = True
-                        run_game = False
-                        run_game_result = False
-                        INIT_MENU = False
+                        state.run_menu = True
+                        state.run_game = False
+                        state.run_game_result = False
+                        state.INIT_MENU = False
 
             result_text_scroll = draw_menu_results(
                 result_text_scroll, maxtime_chrono, wpm, mode="MOD_CHRONO"
