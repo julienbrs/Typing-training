@@ -120,20 +120,19 @@ def draw_menu_results(text_scroll, maxtime_chrono, wpm, mode):
     return text_scroll
 
 
-def handle_key_press_event(text_target, index, last_key_wrong):
+def handle_key_press_event(text_target, current_index, last_key_wrong):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         if event.type == pygame.KEYDOWN:
-            if event.unicode == text_target[index]:
+            if event.unicode == text_target[current_index]:
                 pygame.mixer.Sound.play(SOUND_KEYPAD)
                 last_key_wrong = False
-                return KeyPressResponse.CORRECT, last_key_wrong
+                current_index += 1
             pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
             last_key_wrong = True
-            return KeyPressResponse.WRONG, last_key_wrong
-    return KeyPressResponse.NO_ACTION, last_key_wrong
+    return KeyPressResponse.NO_ACTION, last_key_wrong, current_index
 
 
 def blit_text_to_window(text, position):
@@ -203,6 +202,7 @@ class BackgroundManager:
     def display(self):
         WIN.blit(self.IMG_BACKGROUND_GAME, (0, 0))
 
+
 class TextManager:
     def __init__(self):
         self.data = initialize_game()
@@ -219,6 +219,88 @@ class TextManager:
     def is_current_text_finished(self, current_index):
         return current_index >= len(self.current_text) - 1
 
+
+class UIManager:
+    def __init__(self, window):
+        self.WIN = window
+
+    def display_wpm(self, wpm):
+        str_hud = "WPM : " + wpm
+        text_wpm = FONT_ARABOTO_50.render(str_hud, 1, DARK_PURPLE)
+        self.WIN.blit(text_wpm, (WIDTH * 0.95 -
+                      text_wpm.get_width(), HEIGHT * 0.08))
+
+    def display_next_text(self, next_text):
+        next_text_game = FONT_HELVETICA.render(next_text, 1, DARK_PURPLE)
+        next_text_game.set_alpha(180)
+        self.WIN.blit(next_text_game, (WIDTH * 0.5 -
+                      next_text_game.get_width() / 2, HEIGHT * 0.57))
+
+    def draw_current_text(self, font, text_manager, current_index, test_letter, last_key_wrong):
+        M_ADV_X = 4  # todo ??? Madv_x
+
+        # calculate how big the entire line of text is
+        text_surf_rect = font.get_rect(text_manager.current_text)
+        text_surf_rect.size = (
+            text_surf_rect.size[0] * 1.1,
+            text_surf_rect.size[1]
+        )  # todo more elegant?
+
+        # This rect's y property is the baseline since we use the origin mode
+        baseline = text_surf_rect.y
+
+        # Create a surface to render the text on and center it on the screen
+        text_surf = pygame.Surface(text_surf_rect.size)
+        text_surf_rect.center = self.WIN.get_rect().center
+
+        # Calculate the width (and other stuff) for each letter of the text
+        metrics = font.get_metrics(text_manager.current_text)
+
+        # Fill the surface
+        text_surf.fill(YELLOW_ORANGE)
+
+        x = 0
+        for (idx, (letter, metric)) in enumerate(zip(text_manager.current_text, metrics)):
+            # Set default color
+            color = DARK_PURPLE
+
+            # select the right color
+            if idx == current_index:
+                start_pos = (
+                    text_surf_rect.x + x + 3,
+                    text_surf_rect.y + text_surf_rect.height - 5,
+                )
+                end_pos = (
+                    text_surf_rect.x + x + metric[M_ADV_X] - 5,
+                    text_surf_rect.y + text_surf_rect.height - 5,
+                )
+
+                if test_letter in [KeyPressResponse.NO_TEST, KeyPressResponse.NO_ACTION]:
+                    color = RED_WRONG if last_key_wrong else "lightblue"
+                elif test_letter == KeyPressResponse.WRONG:
+                    color = RED_WRONG
+                elif test_letter == KeyPressResponse.CORRECT:
+                    print(f"Correct: {test_letter} in enum")
+                    color = GREEN_RIGHT
+                else:
+                    print(f"Error: {test_letter} not in enum")
+
+                color_line = color
+            elif idx < current_index:
+                color = GREEN_RIGHT
+            else:
+                color = DARK_PURPLE
+
+            # render the single letter
+            font.render_to(text_surf, (x, baseline), letter, color)
+            # and move the start position
+            x += metric[M_ADV_X]
+
+        self.WIN.blit(text_surf, text_surf_rect)
+        self.draw_line_under_text(start_pos, end_pos, color_line)
+
+    def draw_line_under_text(self, start_pos, end_pos, color):
+        pygame.draw.line(self.WIN, color, start_pos, end_pos, width=5)
 
 
 def handle_menu_event(event, text_blink, text_scroll, state):
@@ -252,7 +334,8 @@ def handle_menu_event(event, text_blink, text_scroll, state):
 def main():
     state = GameState()
     bg_manager = BackgroundManager()
-    text_manager = TextManager() 
+    text_manager = TextManager()
+    ui_manager = UIManager(WIN)
     pygame.mixer.music.set_volume(0.05)
 
     clock = pygame.time.Clock()
@@ -289,115 +372,47 @@ def main():
                 font = pygame.freetype.Font(
                     os.path.join("fonts", "Helvetica.ttf"), 50)
                 font.origin = True
-                M_ADV_X = 4  # todo ??? Madv_x
                 # let's calculate how big the entire line of text is
                 text_surf_rect = font.get_rect(text_manager.current_text)
                 text_surf_rect.size = (
                     text_surf_rect.size[0] * 1.1,
                     text_surf_rect.size[1],
                 )  # todo plus élégant
-                text_surf_background_rect = font.get_rect(text_manager.current_text)
+                text_surf_background_rect = font.get_rect(
+                    text_manager.current_text)
                 text_surf_background_rect.size = (
                     text_surf_rect.width * 1.15,
                     text_surf_rect.height * 1.7,
                 )
-                # in this rect, the y property is the baseline
-                # we use since we use the origin mode
-                baseline = text_surf_rect.y
-
-                # now let's create a surface to render the text on
-                # and center it on the screen
-                text_surf = pygame.Surface(text_surf_rect.size)
-                text_surf_background = pygame.Surface(
-                    text_surf_background_rect.size)
 
                 text_surf_background_rect.center = WIN.get_rect().center
                 text_surf_rect.center = WIN.get_rect().center
                 # calculate the width (and other stuff) for each letter of the text
-                metrics = font.get_metrics(text_manager.current_text)
                 start_time = time.time()
                 # todo gérer fin de phrase
 
             time_elapsed = max(time.time() - start_time, 1)
             wpm = str(round((char_typed / (time_elapsed / 60)) / 5))
-            # if test_letter !=3:
+
             if text_manager.is_current_text_finished(current_index):
-                # if the sentence is complete, let's prepare the
-                # next surface
+                # if the sentence is complete, let's prepare the  next surface
                 current_index = 0
                 text_manager.next_text_set()
                 text_surf_rect = font.get_rect(text_manager.current_text)
-                baseline = text_surf_rect.y
-
-                text_surf = pygame.Surface(text_surf_rect.size)
-                text_surf_rect.center = text_surf_background_rect.center
-                metrics = font.get_metrics(text_manager.current_text)
                 test_letter = 0
 
             if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.CORRECT:
                 bg_manager.set_right()
             elif test_letter == KeyPressResponse.WRONG:
                 bg_manager.set_wrong()
+
             bg_manager.display()
+            ui_manager.display_wpm(wpm)
 
-            str_hud = "WPM : " + wpm
-            text_wpm = FONT_ARABOTO_50.render(str_hud, 1, DARK_PURPLE)
-            WIN.blit(text_wpm, (WIDTH * 0.95 -
-                     text_wpm.get_width(), HEIGHT * 0.08))
-            # text_surf_background.fill('white')
-            text_surf.fill(YELLOW_ORANGE)
+            ui_manager.draw_current_text(
+                font, text_manager, current_index, test_letter, last_key_wrong)
 
-            x = 0
-            for (idx, (letter, metric)) in enumerate(zip(text_manager.current_text, metrics)):
-                # Set default color
-                color = DARK_PURPLE
-
-                #  select the right color
-                if idx == current_index:
-                    start_pos = (
-                        text_surf_rect.x + x + 3,
-                        text_surf_rect.y + text_surf_rect.height - 5,
-                    )
-                    end_pos = (
-                        text_surf_rect.x + x + metric[M_ADV_X] - 5,
-                        text_surf_rect.y + text_surf_rect.height - 5,
-                    )
-                    # todo : no_action necessary ?
-                    if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.NO_ACTION:
-                        if last_key_wrong:
-                            color = RED_WRONG
-                        else:
-                            color = "lightblue"
-                    elif test_letter == KeyPressResponse.WRONG:
-                        color = RED_WRONG
-                    elif test_letter == KeyPressResponse.CORRECT:
-                        color = GREEN_RIGHT
-                        current_index += 1
-                        char_typed += 1
-                        test_letter = KeyPressResponse.NO_TEST
-                    else:
-                        print(f"Error: {test_letter} not in enum")
-                    color_line = color
-                elif idx < current_index:
-                    color = GREEN_RIGHT
-                else:
-                    color = DARK_PURPLE
-                # render the single letter
-                font.render_to(text_surf, (x, baseline), letter, color)
-                # and move the start position
-                x += metric[M_ADV_X]
-            # text_surf_background.set_alpha(90)
-            # WIN.blit(text_surf_background, text_surf_background_rect)
-            WIN.blit(text_surf, text_surf_rect)
-            pygame.draw.line(WIN, color_line, start_pos, end_pos, width=5)
-
-            next_text_game = FONT_HELVETICA.render(
-                text_manager.next_text, 1, DARK_PURPLE)
-            next_text_game.set_alpha(180)
-            WIN.blit(
-                next_text_game,
-                (WIDTH * 0.5 - next_text_game.get_width() / 2, HEIGHT * 0.57),
-            )
+            ui_manager.display_next_text(text_manager.next_text)
 
             if state.MOD_CHRONO:
                 chrono_ended = display_remaining_time(
@@ -409,7 +424,7 @@ def main():
 
             pygame.display.update()
 
-            test_letter, last_key_wrong = handle_key_press_event(
+            test_letter, last_key_wrong, current_index = handle_key_press_event(
                 text_manager.current_text, current_index, last_key_wrong
             )
 
