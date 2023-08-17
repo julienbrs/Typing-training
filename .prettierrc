@@ -1,0 +1,22 @@
+{
+    "singleQuote": true,
+    "trailingComma": "none",
+    "insertPragma": false,
+    "semi": true,
+    "tabWidth": 4,
+    "useTabs": false,
+    "quoteProps": "as-needed",
+    "arrowParens": "avoid",
+    "jsxSingleQuote": false,
+    "endOfLine": "auto",
+    "htmlWhitespaceSensitivity": "strict",
+    "overrides": [
+      {
+        "files": "*.py",
+        "options": {
+          "commentSpacing": 0
+        }
+      }
+    ]
+  }
+  
