@@ -188,6 +188,22 @@ class GameState:
         self.APP_RUN = False
 
 
+class BackgroundManager:
+    def __init__(self):
+        self.IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
+
+    def set_wrong(self):
+        self.IMG_BACKGROUND_GAME = pygame.transform.scale(
+            IMG_BACKGROUND_GAME_WRONG, WIN_SIZE)
+
+    def set_right(self):
+        self.IMG_BACKGROUND_GAME = pygame.transform.scale(
+            IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE)
+
+    def display(self):
+        WIN.blit(self.IMG_BACKGROUND_GAME, (0, 0))
+
+
 def handle_menu_event(event, text_blink, text_scroll, state):
 
     if event.type == pygame.QUIT:
@@ -218,9 +234,8 @@ def handle_menu_event(event, text_blink, text_scroll, state):
 
 def main():
     state = GameState()
-
+    bg_manager = BackgroundManager()
     pygame.mixer.music.set_volume(0.05)
-    IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
 
     data = initialize_game()
 
@@ -241,7 +256,8 @@ def main():
                 state.INIT_MENU = False
 
             for event in pygame.event.get():
-                text_blink, text_scroll = handle_menu_event(event, text_blink, text_scroll, state)
+                text_blink, text_scroll = handle_menu_event(
+                    event, text_blink, text_scroll, state)
             text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
 
         while state.run_game:
@@ -253,10 +269,8 @@ def main():
                 time_start_game = pygame.time.get_ticks()
                 char_typed = 0
                 test_letter = KeyPressResponse.NO_TEST
-                IMG_BACKGROUND_GAME = IMG_BACKGROUND_GAME_RIGHT
-
-                WIN.blit(pygame.transform.scale(
-                    IMG_BACKGROUND_GAME, WIN_SIZE), (0, 0))
+                bg_manager.set_right()
+                bg_manager.display()
 
                 current_index = 0
                 font = pygame.freetype.Font(
@@ -309,17 +323,10 @@ def main():
                 test_letter = 0
 
             if test_letter == KeyPressResponse.NO_TEST or test_letter == KeyPressResponse.CORRECT:
-                IMG_BACKGROUND_GAME = pygame.transform.scale(
-                    IMG_BACKGROUND_GAME_RIGHT, WIN_SIZE
-                )
-                WIN.blit(IMG_BACKGROUND_GAME, (0, 0))
+                bg_manager.set_right()
             elif test_letter == KeyPressResponse.WRONG:
-                IMG_BACKGROUND_GAME = pygame.transform.scale(
-                    IMG_BACKGROUND_GAME_WRONG, WIN_SIZE
-                )
-                WIN.blit(IMG_BACKGROUND_GAME, (0, 0))
-            else:
-                WIN.blit(IMG_BACKGROUND_GAME, (0, 0))
+                bg_manager.set_wrong()
+            bg_manager.display()
 
             str_hud = "WPM : " + wpm
             text_wpm = FONT_ARABOTO_50.render(str_hud, 1, DARK_PURPLE)
