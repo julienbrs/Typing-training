@@ -43,7 +43,7 @@ def draw_menu(state, surface):
         draw_text_center(surface, text_menu_welcome, 0.5, 0.1)
 
     start_game.draw(surface, text_menu_start_game, state.main_menu_selected)
-    leaderboard.draw(surface, text_menu_leaderboard, state.main_menu_selected)
+    progression_link.draw(surface, text_menu_progression_link, state.main_menu_selected)
     dictionnary.draw(surface, text_menu_dictionnary, state.main_menu_selected)
     pygame.display.update()
 
@@ -69,23 +69,6 @@ def draw_menu_results(maxtime_chrono, gamestate):
         WIN, text_results_menu_continue, gamestate.results_menu_selected)
 
     pygame.display.update()
-
-
-def draw_dictionnary_menu(gamestate):
-    WIN.blit(IMG_BACKGROUND_RESULTS, (0, 0))
-    draw_text_center(WIN, FONT_ARABOTO_80.render(
-        "Dictionnaire", 1, DEEP_BLUE), 0.5, 0.25)
-    draw_text_center(WIN, FONT_ARABOTO_50.render(
-        "Dictionnaire", 1, DEEP_BLUE), 0.5, 0.37)
-    draw_text_center(WIN, FONT_ARABOTO_50.render(
-        "Dictionnaire", 1, DEEP_BLUE), 0.5, 0.44)
-
-    linked_save_results.draw(
-        WIN, text_results_menu_save, gamestate.results_menu_selected)
-    linkedback_to_menu.draw(
-        WIN, text_results_menu_continue, gamestate.results_menu_selected)
-    pygame.display.update()
-
 
 class UIManager:
     def __init__(self, window):

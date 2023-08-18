@@ -63,9 +63,9 @@ text_menu_welcome = FONT_ARABOTO_80.render("Typing Session", 1, DEEP_BLUE)
 text_menu_start_game = FONT_ARABOTO_50.render(
     "Start new session", 1, DEEP_BLUE)
 text_menu_dictionnary = FONT_ARABOTO_50.render(
-    "Dictionnary (soon)", 1, DEEP_BLUE)
-text_menu_leaderboard = FONT_ARABOTO_50.render(
-    "Progression (soon)", 1, DEEP_BLUE)
+    "Dictionnary management", 1, DEEP_BLUE)
+text_menu_progression_link = FONT_ARABOTO_50.render(
+    "Show progression", 1, DEEP_BLUE)
 text_results_menu_save = FONT_ARABOTO_50.render("Save Results", 1, DEEP_BLUE)
 text_results_menu_continue = FONT_ARABOTO_50.render("Continue", 1, DEEP_BLUE)
 
@@ -114,9 +114,9 @@ class LinkedText:
 # LinkedText Instances
 start_game = LinkedText(WIDTH / 2, HEIGHT / 3.6, None, None)
 dictionnary = LinkedText(WIDTH / 2, HEIGHT / 2.7, None, start_game)
-leaderboard = LinkedText(WIDTH / 2, HEIGHT / 2.2, start_game, dictionnary)
-dictionnary.next_text = leaderboard
-start_game.next_text, start_game.prev_text = dictionnary, leaderboard
+progression_link = LinkedText(WIDTH / 2, HEIGHT / 2.2, start_game, dictionnary)
+dictionnary.next_text = progression_link
+start_game.next_text, start_game.prev_text = dictionnary, progression_link
 
 linked_save_results = LinkedText(
     WIDTH / 2, HEIGHT * 0.6, None, None, "Save results"

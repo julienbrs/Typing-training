@@ -7,7 +7,7 @@ import os
 from classes.gamestate import Game, GameMode, GameState
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
-from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time, draw_dictionnary_menu
+from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time
 from classes.eventhandler import EventHandler
 
 # imports from constants module
@@ -105,10 +105,7 @@ def main():
 
         elif state.gamestate == GameState.RESULTS_MENU:
             draw_menu_results(event_handler.maxtime_chrono, gamestate=state)
-
-        elif state.gamestate == GameState.DICTIONNARY_MENU:
-            draw_dictionnary_menu(gamestate=state)
-
+    
 
 if __name__ == "__main__":
     main()

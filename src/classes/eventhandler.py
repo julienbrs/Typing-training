@@ -1,10 +1,10 @@
 import pygame
 import pygame.freetype
 import sys
-
-from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, start_game, leaderboard, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
+from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, start_game, progression_link, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
 from .uimanager import draw_menu, draw_menu_results
-from .gamestate import GameMode, GameState
+from .gamestate import GameState
+from .track_record import write_record_to_file, save_wpm_results
 
 
 class EventHandler:
@@ -44,9 +44,6 @@ class EventHandler:
             return self._handle_game_event(event,  self.text_manager.current_text, current_index, last_key_wrong)
         elif self.state.gamestate == GameState.RESULTS_MENU:
             return self.handle_game_result_event(event,  current_index, last_key_wrong)
-        elif self.state.gamestate == GameState.DICTIONNARY_MENU:
-            # return self._handle_dictionnary_menu(event,  current_index, last_key_wrong)
-            return current_index, last_key_wrong
         else:
             return current_index, last_key_wrong
 
@@ -70,13 +67,13 @@ class EventHandler:
                 self.state.gamestate = GameState.IN_GAME
                 self.state.should_init_menu = True
 
-            elif event.key == pygame.K_RETURN and self.state.main_menu_selected == leaderboard:
-                pygame.mixer.Sound.play(SOUND_KEYPAD)
-                print("Leaderboard")
+            elif event.key == pygame.K_RETURN and self.state.main_menu_selected == progression_link:
+                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                save_wpm_results()
+
 
             elif event.key == pygame.K_RETURN and self.state.main_menu_selected == dictionnary:
-                pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                self.state.gamestate = GameState.DICTIONNARY_MENU
+                pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
         return current_index, last_key_wrong
 
     def _handle_game_event(self, event,  text_target, current_index, last_key_wrong):
@@ -99,7 +96,6 @@ class EventHandler:
         return current_index, last_key_wrong
 
     def handle_game_result_event(self, event,  current_index, last_key_wrong):
-        print("handle_game_result_event")
         if event.type == pygame.QUIT:
             self.state.APP_RUN = False
 
@@ -122,5 +118,7 @@ class EventHandler:
 
                 elif self.state.results_menu_selected == linked_save_results:
                     pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+                    write_record_to_file(self.state.wpm)
+                    save_wpm_results()
                     self.state.gamestate = GameState.MAIN_MENU
         return current_index, last_key_wrong

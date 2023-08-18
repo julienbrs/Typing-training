@@ -25,6 +25,7 @@ class Game:
         self.nb_char_typed = 0
         self.time_elapsed = 0.0001
         self.text_blink_tick = 0
+        self.wpm = 0
 
     def quit(self):
         self.APP_RUN = False
@@ -32,4 +33,5 @@ class Game:
     def calculate_wpm(self):
         time_elapsed_in_min = self.time_elapsed / 60000
         wpm = round((self.nb_char_typed / 5)/time_elapsed_in_min, 1)
+        self.wpm = wpm
         return str(wpm)
