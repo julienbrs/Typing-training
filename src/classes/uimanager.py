@@ -35,7 +35,6 @@ def draw_text_center(surface, text, x_ratio, y_ratio):
 
 
 def draw_menu(state, surface):
-    print("text_blink_tick", state.text_blink_tick)
     surface.blit(
         pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0, 0)
     )
@@ -46,7 +45,6 @@ def draw_menu(state, surface):
     start_game.draw(surface, text_menu_start_game, state.main_menu_selected)
     leaderboard.draw(surface, text_menu_leaderboard, state.main_menu_selected)
     dictionnary.draw(surface, text_menu_dictionnary, state.main_menu_selected)
-    print("text_blink_tick final", state.text_blink_tick)
     pygame.display.update()
 
 

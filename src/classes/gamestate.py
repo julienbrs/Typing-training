@@ -7,16 +7,18 @@ class GameMode(Enum):
     CHRONO = 1
     TRAINING = 2
 
+class GameState(Enum):
+    MAIN_MENU = 1
+    IN_GAME = 2
+    RESULTS_MENU = 3
+    DICTIONNARY_MENU = 4
 
-class GameState:
+class Game:
     def __init__(self):
+        self.gamestate = GameState.MAIN_MENU
         self.APP_RUN = True
         self.should_init_menu = True
         self.game_mode = GameMode.CHRONO
-        self.run_game = False
-        self.run_dictionnary_menu = False
-        self.run_menu = True
-        self.run_game_result = False
         self.time_start_game = 0
         self.main_menu_selected = start_game
         self.results_menu_selected = linked_save_results

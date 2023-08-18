@@ -4,7 +4,7 @@
 import pygame
 import pygame.freetype
 import os
-from classes.gamestate import GameState, GameMode
+from classes.gamestate import Game, GameMode, GameState
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
 from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time, draw_dictionnary_menu
@@ -20,7 +20,7 @@ pygame.mixer.init()
 
 
 def main():
-    state = GameState()
+    state = Game()
     bg_manager = BackgroundManager()
     text_manager = TextManager()
     ui_manager = UIManager(WIN)
@@ -38,14 +38,14 @@ def main():
             current_index, last_key_wrong = event_handler.handle_event(
                 event,  current_index, last_key_wrong)
 
-        if state.run_menu:
+        if state.gamestate == GameState.MAIN_MENU:
             if state.should_init_menu:
                 state.nb_char_typed = 0
                 state.time_elapsed = 0.0001
                 state.should_init_menu = False
             draw_menu(state, WIN)
 
-        elif state.run_game:
+        elif state.gamestate == GameState.IN_GAME:
             if state.should_init_menu:
                 state.nb_char_typed = 0
                 state.time_elapsed = 0.0001
@@ -95,8 +95,7 @@ def main():
                 is_chrono_ended = display_remaining_time(
                     state, max_time=event_handler.maxtime_chrono)
                 if is_chrono_ended:
-                    state.run_game_result = True
-                    state.run_game = False
+                    state.gamestate = GameState.RESULTS_MENU
 
             pygame.display.update()
 
@@ -104,10 +103,10 @@ def main():
                 text_manager.current_text, current_index, last_key_wrong
             )
 
-        elif state.run_game_result:
+        elif state.gamestate == GameState.RESULTS_MENU:
             draw_menu_results(event_handler.maxtime_chrono, gamestate=state)
 
-        elif state.run_dictionnary_menu:
+        elif state.gamestate == GameState.DICTIONNARY_MENU:
             draw_dictionnary_menu(gamestate=state)
 
 
