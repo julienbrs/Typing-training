@@ -13,7 +13,8 @@ class EventHandler:
         self.text_manager = text_manager
         self.background_manager = background_manager
         self.ui_manager = ui_manager
-        self.maxtime_chrono = int(CONFIG['time_of_test'])*1000 # in ms to seconds
+        self.maxtime_chrono = int(
+            CONFIG['time_of_test'])*1000  # in ms to seconds
 
     def handle_key_press_event(self, text_target, current_index, last_key_wrong):
         for event in pygame.event.get():
@@ -21,7 +22,7 @@ class EventHandler:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK):
+                if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK, 1073741824, pygame.K_CARET):
                     return KeyPressResponse.NO_ACTION, last_key_wrong, current_index
 
                 if event.unicode == text_target[current_index]:
@@ -85,7 +86,8 @@ class EventHandler:
             self.state.APP_RUN = False
 
         elif event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK):
+            # print(event.key)
+            if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK, pygame.K_CARET):
                 return current_index, last_key_wrong
 
             if event.unicode == text_target[current_index]:

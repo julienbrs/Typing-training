@@ -27,22 +27,22 @@ def create_list_for_game(params, source=DICTIONARY_PATH, dest=TEMP_GAME_DICT_PAT
     print("Initial words:", len(words))
 
     # Check if we use capital letters
-    if params['capital_letters']:
+    if not params['capital_letters']:
         # put all words in lowercase
         words = [word.lower() for word in words]
 
     # Check if we use accents
-    if params['accents']:
+    if not params['accents']:
         words = [word for word in words if not any(
             char in word for char in 'éèêëàâäùûüîïôöç')]
 
     # Check if we use punctuation
-    if params['punctuation']:
+    if not params['punctuation']:
         words = [word for word in words if not any(
             char in word for char in ',.;:?!')]
 
     # Check if we use numbers
-    if params['numbers']:
+    if not params['numbers']:
         words = [word for word in words if not any(
             char in word for char in '0123456789')]
 

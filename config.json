@@ -1,9 +1,9 @@
 {
     "params": {
-        "capital_letters": "True",
-        "accents": "False",
-        "punctuation": "False",
-        "numbers": "False"
+        "capital_letters": false,
+        "accents": true,
+        "punctuation": false,
+        "numbers": false
     },
     "time_of_test": "60",
     "sound_volume": "0.05"
