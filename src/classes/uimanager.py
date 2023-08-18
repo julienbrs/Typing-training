@@ -121,7 +121,7 @@ class UIManager:
         text_surf_rect.size = (
             text_surf_rect.size[0] * 1.1,
             text_surf_rect.size[1]
-        )  # todo more elegant?
+        )  # Todo clean this mess
 
         # This rect's y property is the baseline since we use the origin mode
         baseline = text_surf_rect.y
@@ -132,8 +132,6 @@ class UIManager:
 
         # Calculate the width (and other stuff) for each letter of the text
         metrics = font.get_metrics(text_manager.current_text)
-
-        # Fill the surface
         text_surf.fill(YELLOW_ORANGE)
 
         x = 0

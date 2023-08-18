@@ -39,7 +39,7 @@ def save_wpm_results():
              linestyle='-', color='b', markersize=8)
 
     plt.fill_between(trials, wpm_results, color="yellow",
-                     alpha=0.1)  # Remplissage jaune poussin
+                     alpha=0.1)
     plt.title('Typing Test WPM Over Time',
               fontsize=18, fontweight='bold', color='darkblue')
     plt.xlabel('Trial Number', fontsize=14, color='darkblue')

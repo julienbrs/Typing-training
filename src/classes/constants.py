@@ -9,10 +9,13 @@ pygame.font.init()
 
 # load config
 PATH_TO_CONFIG = os.path.join("config.json")
+
+
 def load_config():
     with open(PATH_TO_CONFIG, 'r') as file:
         config = json.load(file)
     return config
+
 
 CONFIG = load_config()
 
@@ -41,14 +44,14 @@ pygame.display.set_caption("Typing Training")
 SOUND_VOLUME = float(CONFIG['sound_volume'])
 pygame.mixer.music.set_volume(SOUND_VOLUME)
 SOUND_KEYPAD = pygame.mixer.Sound(os.path.join("src",
-    "assets", "sound_effects", "keypad.mp3"))
+                                               "assets", "sound_effects", "keypad.mp3"))
 SOUND_KEYPAD.set_volume(SOUND_VOLUME*1.5)
 SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
-    os.path.join("src","assets", "sound_effects", "wrong.wav")
+    os.path.join("src", "assets", "sound_effects", "wrong.wav")
 )
 SOUND_KEYPAD_WRONG.set_volume(SOUND_VOLUME*1.3)
 SOUND_SELECT_MENU = pygame.mixer.Sound(
-    os.path.join("src","assets", "sound_effects", "menu.wav")
+    os.path.join("src", "assets", "sound_effects", "menu.wav")
 )
 SOUND_SELECT_MENU.set_volume(SOUND_VOLUME/2.5)
 
@@ -135,7 +138,7 @@ start_game.prev_text, start_game.next_text = dictionnary, progression_link
 
 linked_save_results = LinkedText(
     WIDTH / 2, HEIGHT * 0.6, None, None, "Save results"
-)  # todo enlever .name
+)
 linkedback_to_menu = LinkedText(
     WIDTH / 2, HEIGHT * 0.67, linked_save_results, linked_save_results, "Back menu"
 )
@@ -150,4 +153,3 @@ class KeyPressResponse(Enum):
     WRONG = 1
     CORRECT = 2
     NO_ACTION = 3
-

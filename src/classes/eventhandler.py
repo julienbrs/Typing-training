@@ -1,8 +1,8 @@
+import sys
 import pygame
 import pygame.freetype
-import sys
-from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, CONFIG, SOUND_SELECT_MENU, start_game, progression_link, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
-from .uimanager import draw_menu, draw_menu_results, draw_menu_progression
+from .constants import *
+from .uimanager import draw_menu, draw_menu_results
 from .gamestate import GameState
 from .track_record import write_record_to_file, save_wpm_results
 

@@ -1,9 +1,8 @@
 # pylint: disable=no-member
-# pylint: disable=W0603     disable global variable warning
 
+import os
 import pygame
 import pygame.freetype
-import os
 from classes.gamestate import Game, GameMode, GameState
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
@@ -60,12 +59,13 @@ def main():
                 current_index = 0
                 font = pygame.freetype.Font(FONT_PATH, 50)
                 font.origin = True
+                # Todo: clean this mess to put in class
                 # let's calculate how big the entire line of text is
                 text_surf_rect = font.get_rect(text_manager.current_text)
                 text_surf_rect.size = (
                     text_surf_rect.size[0] * 1.1,
                     text_surf_rect.size[1],
-                )  # todo plus élégant
+                )
                 text_surf_background_rect = font.get_rect(
                     text_manager.current_text)
                 text_surf_background_rect.size = (
@@ -105,10 +105,10 @@ def main():
 
         elif state.gamestate == GameState.RESULTS_MENU:
             draw_menu_results(event_handler.maxtime_chrono, gamestate=state)
-        
+
         elif state.gamestate == GameState.PROGRESSION_MENU:
             draw_menu_progression(state)
-    
+
 
 if __name__ == "__main__":
     main()
