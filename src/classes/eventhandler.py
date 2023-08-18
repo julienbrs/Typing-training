@@ -2,8 +2,10 @@ import pygame
 import pygame.freetype
 import sys
 
-from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, MENU_SELECTED, RESULTS_MENU_SELECTED, start_game, linkedback_to_menu, linked_save_results, KeyPressResponse
+from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, MENU_SELECTED, start_game, linkedback_to_menu, linked_save_results, KeyPressResponse
 from .uimanager import draw_menu, draw_menu_results
+from .gamestate import GameMode
+
 
 class EventHandler:
     def __init__(self, state, text_manager, background_manager, ui_manager):
@@ -11,8 +13,7 @@ class EventHandler:
         self.text_manager = text_manager
         self.background_manager = background_manager
         self.ui_manager = ui_manager
-        self.maxtime_chrono = 2500
-        self.wpm = None
+        self.maxtime_chrono = 25000
 
     def handle_key_press_event(self, text_target, current_index, last_key_wrong):
         for event in pygame.event.get():
@@ -20,11 +21,15 @@ class EventHandler:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK):
+                    return KeyPressResponse.NO_ACTION, last_key_wrong, current_index
+
                 if event.unicode == text_target[current_index]:
                     pygame.mixer.Sound.play(SOUND_KEYPAD)
                     self.background_manager.set_right()
                     last_key_wrong = False
                     current_index += 1
+                    self.state.nb_char_typed += 1
                 else:
                     pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
                     self.background_manager.set_wrong()
@@ -62,7 +67,7 @@ class EventHandler:
                 pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                 self.state.run_menu = False
                 self.state.run_game = True
-                self.state.INIT_MENU = True
+                self.state.should_init_menu = True
         return text_blink, text_scroll, current_index, last_key_wrong
 
     def _handle_game_event(self, event, text_blink, text_scroll, text_target, current_index, last_key_wrong):
@@ -75,6 +80,9 @@ class EventHandler:
             self.state.APP_RUN = False
 
         elif event.type == pygame.KEYDOWN:
+            if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_CAPSLOCK):
+                return new_text_blink, new_text_scroll, current_index, last_key_wrong
+
             if event.unicode == text_target[current_index]:
                 pygame.mixer.Sound.play(SOUND_KEYPAD)
                 last_key_wrong = False
@@ -95,29 +103,29 @@ class EventHandler:
                 pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                 # You might need to modify this to return or handle result_text_scroll if necessary
                 draw_menu_results(result_text_scroll,
-                                  self.maxtime_chrono, self.wpm, mode="MOD_CHRONO")
+                                  self.maxtime_chrono,  gamestate=self.state)
 
             elif event.key == pygame.K_DOWN:
                 result_text_scroll = "DOWN"
                 pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                 # You might need to modify this to return or handle result_text_scroll if necessary
                 draw_menu_results(result_text_scroll,
-                                  self.maxtime_chrono, self.wpm, mode="MOD_CHRONO")
+                                  self.maxtime_chrono,  gamestate=self.state)
 
             elif event.key == pygame.K_RETURN:
-                if RESULTS_MENU_SELECTED == linkedback_to_menu:
+                if self.state.results_menu_selected == linkedback_to_menu:
                     pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                     self.state.run_menu = True
                     self.state.run_game = False
                     self.state.run_game_result = False
-                    self.state.INIT_MENU = False
+                    self.state.should_init_menu = False
 
-                elif RESULTS_MENU_SELECTED == linked_save_results:
+                elif self.state.results_menu_selected == linked_save_results:
                     pygame.mixer.Sound.play(SOUND_SELECT_MENU)
                     self.state.run_menu = True
                     self.state.run_game = False
                     self.state.run_game_result = False
-                    self.state.INIT_MENU = False
+                    self.state.should_init_menu = False
 
             if result_text_blink is None:
                 result_text_blink = 0

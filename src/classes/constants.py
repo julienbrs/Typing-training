@@ -130,7 +130,6 @@ linked_save_results.next_text, linked_save_results.prev_text = (
     linkedback_to_menu,
     linkedback_to_menu,
 )
-RESULTS_MENU_SELECTED = linked_save_results
 
 
 class KeyPressResponse(Enum):

@@ -29,4 +29,4 @@ class TextManager:
             self.next_text = None  # or some default text
 
     def is_current_text_finished(self, current_index):
-        return current_index >= len(self.current_text) - 1
+        return current_index > len(self.current_text) - 1

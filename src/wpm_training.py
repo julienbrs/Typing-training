@@ -4,7 +4,7 @@
 import pygame
 import pygame.freetype
 import os
-from classes.gamestate import GameState
+from classes.gamestate import GameState, GameMode
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
 from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time
@@ -29,7 +29,6 @@ def main():
 
     clock = pygame.time.Clock()
     text_blink = 0
-    wpm = str(0)
     text_scroll = None
     result_text_scroll = None
     current_index = 0
@@ -43,14 +42,18 @@ def main():
                 event, text_blink, text_scroll, current_index, last_key_wrong)
 
         if state.run_menu:
-            if state.INIT_MENU:
-                state.INIT_MENU = False
+            if state.should_init_menu:
+                state.nb_char_typed = 0
+                state.time_elapsed = 0.0001
+                state.should_init_menu = False
             text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
 
         elif state.run_game:
-            if state.INIT_MENU:
+            if state.should_init_menu:
+                state.nb_char_typed = 0
+                state.time_elapsed = 0.0001
                 last_key_wrong = False
-                state.INIT_MENU = False
+                state.should_init_menu = False
                 state.time_start_game = pygame.time.get_ticks()
                 bg_manager.set_right()
                 bg_manager.display()
@@ -82,19 +85,19 @@ def main():
                 current_index = 0
                 text_manager.next_text_set()
                 text_surf_rect = font.get_rect(text_manager.current_text)
-                test_letter = 0
+                test_letter = KeyPressResponse.CORRECT
 
-            ui_manager.display_wpm(wpm)
+            ui_manager.display_wpm(state)
 
             ui_manager.draw_current_text(
                 font, text_manager, current_index, test_letter, last_key_wrong)
 
             ui_manager.display_next_text(text_manager.next_text)
 
-            if state.MOD_CHRONO:
-                chrono_ended = display_remaining_time(
-                    state.time_start_game, max_time=event_handler.maxtime_chrono)
-                if chrono_ended:
+            if state.game_mode == GameMode.CHRONO:
+                is_chrono_ended = display_remaining_time(
+                    state, max_time=event_handler.maxtime_chrono)
+                if is_chrono_ended:
                     state.run_game_result = True
                     state.run_game = False
 
@@ -106,7 +109,10 @@ def main():
 
         elif state.run_game_result:
             result_text_scroll = draw_menu_results(
-                result_text_scroll, event_handler.maxtime_chrono, wpm, mode="MOD_CHRONO")
+                result_text_scroll, event_handler.maxtime_chrono, gamestate=state)
+        
+        elif state.run_dictionnary_menu:
+            print("dictionnary menu")
 
 
 if __name__ == "__main__":
