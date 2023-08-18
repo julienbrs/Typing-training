@@ -7,7 +7,7 @@ import os
 from classes.gamestate import Game, GameMode, GameState
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
-from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time
+from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time, draw_menu_progression
 from classes.eventhandler import EventHandler
 
 # imports from constants module
@@ -17,6 +17,9 @@ from classes.constants import *
 pygame.freetype.init()
 pygame.font.init()
 pygame.mixer.init()
+
+FONT_PATH = os.path.join(os.path.dirname(
+    __file__), "assets", "fonts", "Helvetica.ttf")
 
 
 def main():
@@ -56,9 +59,7 @@ def main():
                 bg_manager.display()
 
                 current_index = 0
-                font_path = os.path.join(os.path.dirname(
-                    __file__), "assets", "fonts", "Helvetica.ttf")
-                font = pygame.freetype.Font(font_path, 50)
+                font = pygame.freetype.Font(FONT_PATH, 50)
                 font.origin = True
                 # let's calculate how big the entire line of text is
                 text_surf_rect = font.get_rect(text_manager.current_text)
@@ -105,6 +106,9 @@ def main():
 
         elif state.gamestate == GameState.RESULTS_MENU:
             draw_menu_results(event_handler.maxtime_chrono, gamestate=state)
+        
+        elif state.gamestate == GameState.PROGRESSION_MENU:
+            draw_menu_progression(state)
     
 
 if __name__ == "__main__":

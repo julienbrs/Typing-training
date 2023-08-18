@@ -1,8 +1,10 @@
 import os
 import matplotlib.pyplot as plt
+import pygame
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RECORDS_PATH = os.path.join(BASE_DIR, 'records.txt')
+
 
 def is_float(value):
     """Verifies if a value can be converted to a float."""
@@ -11,6 +13,7 @@ def is_float(value):
         return True
     except ValueError:
         return False
+
 
 def write_record_to_file(record):
     """ Writes records to a file """
@@ -49,6 +52,8 @@ def save_wpm_results():
     plt.gca().spines['right'].set_visible(False)
 
     plt.savefig('wpm_results.png', format='png', dpi=300)
+
+
 
 if __name__ == "__main__":
     save_wpm_results()

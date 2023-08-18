@@ -12,6 +12,7 @@ class GameState(Enum):
     IN_GAME = 2
     RESULTS_MENU = 3
     DICTIONNARY_MENU = 4
+    PROGRESSION_MENU = 5
 
 class Game:
     def __init__(self):

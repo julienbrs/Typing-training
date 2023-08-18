@@ -46,6 +46,9 @@ IMG_BACKGROUND_LOADING_SCREEN = pygame.image.load(
 IMG_BACKGROUND_GAME_RIGHT = pygame.image.load(
     os.path.join("./src/assets/images/yellow_wallpaper_right.jpg")
 )
+IMG_BACKGROUND_GAME_SIMPLE = pygame.image.load(
+    os.path.join("./src/assets/images/yellow_wallpaper_clean.jpg")
+)
 IMG_BACKGROUND_GAME_WRONG = pygame.image.load(
     os.path.join("./src/assets/images/yellow_wallpaper_wrong.jpg")
 )
@@ -63,7 +66,7 @@ text_menu_welcome = FONT_ARABOTO_80.render("Typing Session", 1, DEEP_BLUE)
 text_menu_start_game = FONT_ARABOTO_50.render(
     "Start new session", 1, DEEP_BLUE)
 text_menu_dictionnary = FONT_ARABOTO_50.render(
-    "Dictionnary management", 1, DEEP_BLUE)
+    "Dictionnary management (soon)", 1, DEEP_BLUE)
 text_menu_progression_link = FONT_ARABOTO_50.render(
     "Show progression", 1, DEEP_BLUE)
 text_results_menu_save = FONT_ARABOTO_50.render("Save Results", 1, DEEP_BLUE)
@@ -113,10 +116,10 @@ class LinkedText:
 
 # LinkedText Instances
 start_game = LinkedText(WIDTH / 2, HEIGHT / 3.6, None, None)
-dictionnary = LinkedText(WIDTH / 2, HEIGHT / 2.7, None, start_game)
-progression_link = LinkedText(WIDTH / 2, HEIGHT / 2.2, start_game, dictionnary)
-dictionnary.next_text = progression_link
-start_game.next_text, start_game.prev_text = dictionnary, progression_link
+dictionnary = LinkedText(WIDTH / 2, HEIGHT / 2.2, start_game, None)
+progression_link = LinkedText(WIDTH / 2, HEIGHT / 2.7, dictionnary, start_game)
+dictionnary.prev_text = progression_link
+start_game.prev_text, start_game.next_text = dictionnary, progression_link
 
 linked_save_results = LinkedText(
     WIDTH / 2, HEIGHT * 0.6, None, None, "Save results"

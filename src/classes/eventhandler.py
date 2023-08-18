@@ -2,7 +2,7 @@ import pygame
 import pygame.freetype
 import sys
 from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, start_game, progression_link, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
-from .uimanager import draw_menu, draw_menu_results
+from .uimanager import draw_menu, draw_menu_results, draw_menu_progression
 from .gamestate import GameState
 from .track_record import write_record_to_file, save_wpm_results
 
@@ -13,7 +13,7 @@ class EventHandler:
         self.text_manager = text_manager
         self.background_manager = background_manager
         self.ui_manager = ui_manager
-        self.maxtime_chrono = 2500
+        self.maxtime_chrono = 60000
 
     def handle_key_press_event(self, text_target, current_index, last_key_wrong):
         for event in pygame.event.get():
@@ -44,6 +44,8 @@ class EventHandler:
             return self._handle_game_event(event,  self.text_manager.current_text, current_index, last_key_wrong)
         elif self.state.gamestate == GameState.RESULTS_MENU:
             return self.handle_game_result_event(event,  current_index, last_key_wrong)
+        elif self.state.gamestate == GameState.PROGRESSION_MENU:
+            return self.handle_progression_menu_event(event,  current_index, last_key_wrong)
         else:
             return current_index, last_key_wrong
 
@@ -69,8 +71,8 @@ class EventHandler:
 
             elif event.key == pygame.K_RETURN and self.state.main_menu_selected == progression_link:
                 pygame.mixer.Sound.play(SOUND_SELECT_MENU)
-                save_wpm_results()
-
+                self.background_manager.set_simple()
+                self.state.gamestate = GameState.PROGRESSION_MENU
 
             elif event.key == pygame.K_RETURN and self.state.main_menu_selected == dictionnary:
                 pygame.mixer.Sound.play(SOUND_KEYPAD_WRONG)
@@ -121,4 +123,13 @@ class EventHandler:
                     write_record_to_file(self.state.wpm)
                     save_wpm_results()
                     self.state.gamestate = GameState.MAIN_MENU
+        return current_index, last_key_wrong
+
+    def handle_progression_menu_event(self, event,  current_index, last_key_wrong):
+        if event.type == pygame.QUIT:
+            self.state.APP_RUN = False
+
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            pygame.mixer.Sound.play(SOUND_SELECT_MENU)
+            self.state.gamestate = GameState.MAIN_MENU
         return current_index, last_key_wrong
