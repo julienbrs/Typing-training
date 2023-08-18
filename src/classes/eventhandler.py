@@ -1,7 +1,7 @@
 import pygame
 import pygame.freetype
 import sys
-from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, SOUND_SELECT_MENU, start_game, progression_link, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
+from .constants import WIN, SOUND_KEYPAD, SOUND_KEYPAD_WRONG, CONFIG, SOUND_SELECT_MENU, start_game, progression_link, dictionnary, linkedback_to_menu, linked_save_results, KeyPressResponse
 from .uimanager import draw_menu, draw_menu_results, draw_menu_progression
 from .gamestate import GameState
 from .track_record import write_record_to_file, save_wpm_results
@@ -13,7 +13,7 @@ class EventHandler:
         self.text_manager = text_manager
         self.background_manager = background_manager
         self.ui_manager = ui_manager
-        self.maxtime_chrono = 60000
+        self.maxtime_chrono = int(CONFIG['time_of_test'])*1000 # in ms to seconds
 
     def handle_key_press_event(self, text_target, current_index, last_key_wrong):
         for event in pygame.event.get():

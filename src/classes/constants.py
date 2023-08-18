@@ -2,9 +2,19 @@ import pygame
 import pygame.freetype
 import os
 from enum import Enum
+import json
 
 pygame.mixer.init()
 pygame.font.init()
+
+# load config
+PATH_TO_CONFIG = os.path.join("config.json")
+def load_config():
+    with open(PATH_TO_CONFIG, 'r') as file:
+        config = json.load(file)
+    return config
+
+CONFIG = load_config()
 
 
 # Constants
@@ -28,17 +38,19 @@ WIN = pygame.display.set_mode(WIN_SIZE)
 pygame.display.set_caption("Typing Training")
 
 # Load Sounds
+SOUND_VOLUME = float(CONFIG['sound_volume'])
+pygame.mixer.music.set_volume(SOUND_VOLUME)
 SOUND_KEYPAD = pygame.mixer.Sound(os.path.join("src",
     "assets", "sound_effects", "keypad.mp3"))
-SOUND_KEYPAD.set_volume(0.08)
+SOUND_KEYPAD.set_volume(SOUND_VOLUME*1.5)
 SOUND_KEYPAD_WRONG = pygame.mixer.Sound(
     os.path.join("src","assets", "sound_effects", "wrong.wav")
 )
-SOUND_KEYPAD_WRONG.set_volume(0.08)
+SOUND_KEYPAD_WRONG.set_volume(SOUND_VOLUME*1.3)
 SOUND_SELECT_MENU = pygame.mixer.Sound(
     os.path.join("src","assets", "sound_effects", "menu.wav")
 )
-SOUND_SELECT_MENU.set_volume(0.03)
+SOUND_SELECT_MENU.set_volume(SOUND_VOLUME/2.5)
 
 # Load Images
 IMG_BACKGROUND_LOADING_SCREEN = pygame.image.load(

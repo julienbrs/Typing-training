@@ -28,7 +28,6 @@ def main():
     text_manager = TextManager()
     ui_manager = UIManager(WIN)
     event_handler = EventHandler(state, text_manager, bg_manager, ui_manager)
-    pygame.mixer.music.set_volume(0.05)
 
     clock = pygame.time.Clock()
     current_index = 0

@@ -1,7 +1,9 @@
 import pygame
 import os
 from itertools import cycle
-from utils.manage_dictionnary import add_new_word_list_to_dest, create_list_for_game, add_words_to_file
+from utils.manage_dictionnary import create_list_for_game
+
+from .constants import CONFIG
 
 PATH_TO_DICTIONNARY = os.path.join("src", "utils", "dictionnary.txt")
 PATH_TO_NEW_WORDS = os.path.join("src", "utils", "new_words.txt")
@@ -10,13 +12,9 @@ PATH_TO_TEMP_GAME_DICT = os.path.join(
 
 
 def initialize_game():
-    pygame.mixer.music.set_volume(0.05)
-    params = {
-        'capital_letters': True,
-        'accents': False,
-        'punctuation': False,
-        'numbers': True
-    }
+    # read params from config file
+    params = CONFIG['params']
+    
     words = create_list_for_game(
         params=params, source=PATH_TO_DICTIONNARY, dest=PATH_TO_TEMP_GAME_DICT)
     words = cycle(words)

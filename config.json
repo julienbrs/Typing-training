@@ -1,0 +1,10 @@
+{
+    "params": {
+        "capital_letters": "True",
+        "accents": "False",
+        "punctuation": "False",
+        "numbers": "False"
+    },
+    "time_of_test": "60",
+    "sound_volume": "0.05"
+}

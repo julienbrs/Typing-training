@@ -22,23 +22,27 @@ def create_list_for_game(params, source=DICTIONARY_PATH, dest=TEMP_GAME_DICT_PAT
     """ Creates a list of words for the game from the source file and writes it to dest, using params."""
     # Extract words from source
     words = extract_words_from_file(source)
+    print("we are creating")
+    print("params", params)
+    print("Initial words:", len(words))
 
     # Check if we use capital letters
-    if not params['capital_letters']:
-        words = [word for word in words if word.islower()]
+    if params['capital_letters']:
+        # put all words in lowercase
+        words = [word.lower() for word in words]
 
     # Check if we use accents
-    if not params['accents']:
+    if params['accents']:
         words = [word for word in words if not any(
             char in word for char in 'éèêëàâäùûüîïôöç')]
 
     # Check if we use punctuation
-    if not params['punctuation']:
+    if params['punctuation']:
         words = [word for word in words if not any(
             char in word for char in ',.;:?!')]
 
     # Check if we use numbers
-    if not params['numbers']:
+    if params['numbers']:
         words = [word for word in words if not any(
             char in word for char in '0123456789')]
 
