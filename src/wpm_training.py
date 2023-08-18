@@ -7,7 +7,7 @@ import os
 from classes.gamestate import GameState, GameMode
 from classes.backgroundmanager import BackgroundManager
 from classes.textmanager import TextManager
-from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time
+from classes.uimanager import UIManager, draw_menu, draw_menu_results, display_remaining_time, draw_dictionnary_menu
 from classes.eventhandler import EventHandler
 
 # imports from constants module
@@ -28,9 +28,6 @@ def main():
     pygame.mixer.music.set_volume(0.05)
 
     clock = pygame.time.Clock()
-    text_blink = 0
-    text_scroll = None
-    result_text_scroll = None
     current_index = 0
     last_key_wrong = False
     test_letter = KeyPressResponse.NO_TEST
@@ -38,15 +35,15 @@ def main():
     while state.APP_RUN:
         clock.tick(FPS)
         for event in pygame.event.get():
-            text_blink, text_scroll, current_index, last_key_wrong = event_handler.handle_event(
-                event, text_blink, text_scroll, current_index, last_key_wrong)
+            current_index, last_key_wrong = event_handler.handle_event(
+                event,  current_index, last_key_wrong)
 
         if state.run_menu:
             if state.should_init_menu:
                 state.nb_char_typed = 0
                 state.time_elapsed = 0.0001
                 state.should_init_menu = False
-            text_blink, text_scroll = draw_menu(text_blink, text_scroll, WIN)
+            draw_menu(state, WIN)
 
         elif state.run_game:
             if state.should_init_menu:
@@ -108,11 +105,10 @@ def main():
             )
 
         elif state.run_game_result:
-            result_text_scroll = draw_menu_results(
-                result_text_scroll, event_handler.maxtime_chrono, gamestate=state)
-        
+            draw_menu_results(event_handler.maxtime_chrono, gamestate=state)
+
         elif state.run_dictionnary_menu:
-            print("dictionnary menu")
+            draw_dictionnary_menu(gamestate=state)
 
 
 if __name__ == "__main__":

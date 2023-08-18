@@ -80,9 +80,9 @@ class LinkedText:
         self.next_text = next_text
         self.prev_text = prev_text
 
-    def draw(self, surface, text, menu):
+    def draw(self, surface, text, selected_menu):
         """Draw the text with line or not if selected."""
-        if self == menu:
+        if self == selected_menu:
             new_size = (text.get_width() * 1, text.get_height() * 1)
             new_text = pygame.transform.scale(text, new_size)
             surface.blit(
@@ -117,8 +117,6 @@ dictionnary = LinkedText(WIDTH / 2, HEIGHT / 2.7, None, start_game)
 leaderboard = LinkedText(WIDTH / 2, HEIGHT / 2.2, start_game, dictionnary)
 dictionnary.next_text = leaderboard
 start_game.next_text, start_game.prev_text = dictionnary, leaderboard
-
-MENU_SELECTED = start_game
 
 linked_save_results = LinkedText(
     WIDTH / 2, HEIGHT * 0.6, None, None, "Save results"

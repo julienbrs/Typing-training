@@ -1,6 +1,6 @@
 from enum import Enum
 
-from .constants import linked_save_results
+from .constants import linked_save_results, start_game
 
 
 class GameMode(Enum):
@@ -18,9 +18,11 @@ class GameState:
         self.run_menu = True
         self.run_game_result = False
         self.time_start_game = 0
+        self.main_menu_selected = start_game
         self.results_menu_selected = linked_save_results
         self.nb_char_typed = 0
         self.time_elapsed = 0.0001
+        self.text_blink_tick = 0
 
     def quit(self):
         self.APP_RUN = False

@@ -24,16 +24,6 @@ def display_remaining_time(state, max_time):
     return False
 
 
-def update_menu_selection(menu_selected, text_scroll):
-    if text_scroll == "DOWN":
-        menu_selected = menu_selected.next_text
-        text_scroll = None
-    elif text_scroll == "UP":
-        menu_selected = menu_selected.prev_text
-        text_scroll = None
-    return menu_selected, text_scroll
-
-
 def draw_text_center(surface, text, x_ratio, y_ratio):
     surface.blit(
         text,
@@ -44,27 +34,23 @@ def draw_text_center(surface, text, x_ratio, y_ratio):
     )
 
 
-def draw_menu(text_blink, text_scroll, surface):
-    global MENU_SELECTED
+def draw_menu(state, surface):
+    print("text_blink_tick", state.text_blink_tick)
     surface.blit(
         pygame.transform.scale(IMG_BACKGROUND_LOADING_SCREEN, WIN_SIZE), (0, 0)
     )
-    text_blink = (text_blink + 1) % 350
-    if text_blink <= 200:
+    state.text_blink_tick = (state.text_blink_tick + 1) % 350
+    if state.text_blink_tick <= 200:
         draw_text_center(surface, text_menu_welcome, 0.5, 0.1)
 
-    start_game.draw(surface, text_menu_start_game, MENU_SELECTED)
-    leaderboard.draw(surface, text_menu_leaderboard, MENU_SELECTED)
-    dictionnary.draw(surface, text_menu_dictionnary, MENU_SELECTED)
-
-    MENU_SELECTED, text_scroll = update_menu_selection(
-        MENU_SELECTED, text_scroll)
-
+    start_game.draw(surface, text_menu_start_game, state.main_menu_selected)
+    leaderboard.draw(surface, text_menu_leaderboard, state.main_menu_selected)
+    dictionnary.draw(surface, text_menu_dictionnary, state.main_menu_selected)
+    print("text_blink_tick final", state.text_blink_tick)
     pygame.display.update()
-    return text_blink, text_scroll
 
 
-def draw_menu_results(text_scroll, maxtime_chrono, gamestate):
+def draw_menu_results(maxtime_chrono, gamestate):
     wpm = gamestate.calculate_wpm()
     WIN.blit(IMG_BACKGROUND_RESULTS, (0, 0))
     str_results_mod = "Temps limité: " + \
@@ -84,13 +70,10 @@ def draw_menu_results(text_scroll, maxtime_chrono, gamestate):
     linkedback_to_menu.draw(
         WIN, text_results_menu_continue, gamestate.results_menu_selected)
 
-    gamestate.results_menu_selected, text_scroll = update_menu_selection(
-        gamestate.results_menu_selected, text_scroll)
-
     pygame.display.update()
-    return text_scroll
 
-def draw_dictionnary_menu(text_scroll, gamestate):
+
+def draw_dictionnary_menu(gamestate):
     WIN.blit(IMG_BACKGROUND_RESULTS, (0, 0))
     draw_text_center(WIN, FONT_ARABOTO_80.render(
         "Dictionnaire", 1, DEEP_BLUE), 0.5, 0.25)
@@ -103,12 +86,7 @@ def draw_dictionnary_menu(text_scroll, gamestate):
         WIN, text_results_menu_save, gamestate.results_menu_selected)
     linkedback_to_menu.draw(
         WIN, text_results_menu_continue, gamestate.results_menu_selected)
-
-    gamestate.results_menu_selected, text_scroll = update_menu_selection(
-        gamestate.results_menu_selected, text_scroll)
-
     pygame.display.update()
-    return text_scroll
 
 
 class UIManager:
