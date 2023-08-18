@@ -1,7 +1,7 @@
 {
     "params": {
-        "capital_letters": false,
-        "accents": true,
+        "capital_letters": true,
+        "accents": false,
         "punctuation": false,
         "numbers": false
     },
