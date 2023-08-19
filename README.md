@@ -49,6 +49,9 @@
 
 The Typing Test is a game designed to test and improve your typing speed. Word are displayed, and you have to type as many words as possible in the limited timeframe. At the end, your words per minute (WPM) score is calculated and saved, helping you monitor and improve your typing speed over time.
 
+  The graphical interface of this Typing Test was built using <strong>Pygame</strong>. While I wasn't initially familiar with Pygame, it was a rewarding experience to delve into it and see this project come to fruition.
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
