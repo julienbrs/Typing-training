@@ -1,4 +1,4 @@
-# pylint: disable=no-member
+#!/usr/bin/env python3
 
 import os
 import pygame
