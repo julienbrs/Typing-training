@@ -41,6 +41,7 @@
 ## About The Project
 
 [![Python Badge](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org/)
+[![Pygame Badge](https://img.shields.io/badge/pygame-%236772E7?style=for-the-badge&logo=pygame&logoColor=white)](https://www.pygame.org/)
 <br />
 
 <p align="center">
