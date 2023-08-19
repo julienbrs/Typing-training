@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import matplotlib.pyplot as plt
 import pygame
@@ -51,7 +53,7 @@ def save_wpm_results():
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
 
-    plt.savefig('wpm_results.png', format='png', dpi=300)
+    plt.savefig('wpm_progress.png', format='png', dpi=300)
 
 
 

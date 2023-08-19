@@ -44,7 +44,7 @@
 <br />
 
 <p align="center">
-  <img src="src/assets/images/screenshot.png" alt="Product Name Screen Shot" width="50%" height="auto">
+  <img src="src/assets/images/screenshot.png" alt="Product Name Screen Shot" width="66%" height="auto">
 </p>
 
 The Typing Test is a game designed to test and improve your typing speed. Word are displayed, and you have to type as many words as possible in the limited timeframe. At the end, your words per minute (WPM) score is calculated and saved, helping you monitor and improve your typing speed over time.
@@ -102,6 +102,11 @@ All words used in the test are stored in the `src/utils/dictionnary.txt` file. Y
 
 You can also add a batch of words by adding words into `src/utils/new_words.txt` file. Each word should be seperated by a space or 
 a new line. Then run the `./src/utils/manage_dictionnary.py` script to add the words to the dictionnary. It will filter out any words that are already in the dictionnary and clean up the `new_words.txt` file.
+
+#### Progress tracking
+
+By saving your score at the end of each test, you can track your progress over time. Your scores are saved in the `src/classes/records.txt` file. Each line in the file represents a single test. A graph is also generated to visualize your progress at the
+root of the project, named `wpm_progress.png`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
