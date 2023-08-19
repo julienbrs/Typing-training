@@ -54,7 +54,7 @@ def draw_menu(state, surface):
 def draw_menu_progression(state):
     WIN.blit(pygame.transform.scale(IMG_BACKGROUND_GAME_SIMPLE, WIN_SIZE), (0, 0))
 
-    img_loaded = pygame.image.load(os.path.join(BASE_DIR, "..", "..", "wpm_results.png"))
+    img_loaded = pygame.image.load(os.path.join(BASE_DIR, "..", "..", "wpm_progress.png"))
     img_scale_factor = 0.7
     img_width = int(WIDTH * img_scale_factor)
     img_height = int(HEIGHT * img_scale_factor)

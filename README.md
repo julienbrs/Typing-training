@@ -72,11 +72,11 @@ To get a local copy up and running follow these simple example steps.
     ```
 2. Rights to execute
     ```sh
-    chmod +x morpion.py
+    chmod +x src/main.py 
     ```
 3. Then run the program, see more info about parameters in the [Usage](#usage) section
     ```sh
-    ./morpion.py
+    ./src/main.py 
     ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
